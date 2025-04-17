@@ -1,4 +1,4 @@
-# OpenParental
+# OpenParental – HandMade Parental Control Stack for Ubuntu
 
 ![MIT License](https://img.shields.io/badge/license-MIT-green.svg)
 
@@ -55,17 +55,21 @@ If you want to deploy **only the Internet quota management** on an existing devi
 
 - [x] Installation scripts (account creation, filtering, quotas, etc.)
 - [x] Unified installation script (00-install.sh, single entry point)
+- [x] Internet Quota feature (Internet quota management)
+- [ ] Separation of Internet time and screen time (priority)
+- [ ] Implementation of detailed logs so parents can view screen time and Internet time
+- [ ] Improved multi-user management for Internet quota and screen time
 - [ ] Graphical administration interface
 - [ ] Reporting and statistics system
 - [ ] Backup and restore configurations
 - [ ] Remote web administration interface
 - [ ] Automatic component updates
 - [ ] Notification system for parents
-- [ ] Improved multi-user support
+- [ ] Enhanced multi-user support
 - [ ] Detailed configuration documentation
 - [ ] First-time setup assistant
 
-> 💡 Feel free to suggest new features or contribute to the roadmap!
+> 💡 The separation of Internet time and screen time is now the project's top priority. Feel free to suggest new features or contribute to the roadmap!
 
 ## 🔒 Security & Privacy
 - No data sent outside the device by default.

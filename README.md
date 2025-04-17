@@ -1,4 +1,4 @@
-# HandMade Parental Control Stack pour Ubuntu
+# OpenParental – HandMade Parental Control Stack pour Ubuntu
 
 ![MIT License](https://img.shields.io/badge/license-MIT-green.svg)
 
