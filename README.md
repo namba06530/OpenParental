@@ -77,8 +77,8 @@ ct_parent/
 
 1. **Cloner le dépôt**
    ```bash
-   git clone https://github.com/votre-utilisateur/ct_parent.git
-   cd ct_parent
+   git clone https://github.com/namba06530/OpenParental.git
+   cd OpenParental
    ```
 2. **Personnaliser le fichier** `.env` (un exemple prêt à l'emploi est fourni sous le nom `.env.example`)
 3. **Lancer l'installation complète**

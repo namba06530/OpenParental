@@ -26,7 +26,7 @@ OpenParental is an open source parental control solution for Ubuntu. It provides
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/OpenParental.git
+   git clone https://github.com/namba06530/OpenParental.git
    cd OpenParental
    ```
 2. **Customize the** `.env` **file** (a ready-to-use example is provided as `.env.example`)
