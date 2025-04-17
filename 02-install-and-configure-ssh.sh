@@ -45,7 +45,7 @@ save_ssh_key() {
 # Installation du serveur SSH
 install_ssh_server() {
     log "Installation du serveur SSH"
-    apt install -y openssh-server || error "Impossible d'installer openssh-server"
+    apt install -qq -y openssh-server || error "Impossible d'installer openssh-server"
     systemctl enable ssh
     systemctl start ssh
 }

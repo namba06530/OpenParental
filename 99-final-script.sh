@@ -44,14 +44,20 @@ fi
 # 2. Vérification des permissions sur les scripts et logs
 log "Vérification des permissions sur les scripts et logs sensibles"
 chmod 700 /usr/local/bin/internet-quota.sh
-chmod 600 /usr/local/bin/.env
-chown root:root /usr/local/bin/internet-quota.sh /usr/local/bin/.env
-chmod 755 /var/lib/internet-quota
-chmod 644 /var/lib/internet-quota/*.log 2>/dev/null || true
-chown root:root /var/lib/internet-quota/*.log 2>/dev/null || true
+if [ -f /usr/local/bin/.env.quota ]; then
+    chmod 600 /usr/local/bin/.env.quota
+    chown root:root /usr/local/bin/.env.quota
+fi
+chown root:root /usr/local/bin/internet-quota.sh
+
+# 2b. Suppression automatique des scripts d'installation et du .env
+log "Suppression automatique des scripts d'installation et du .env dans $(pwd)"
+rm -f 0*-*.sh 99-final-script.sh .env
+log "Nettoyage terminé."
 
 # 3. (Optionnel) Redémarrer la machine
 read -p "Redémarrer la machine maintenant ? [o/N] " answer
+answer=${answer:-N}
 if [[ "$answer" =~ ^[oOyY]$ ]]; then
     log "Redémarrage en cours..."
     reboot

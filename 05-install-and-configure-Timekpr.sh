@@ -40,10 +40,10 @@ install_timekpr() {
     fi
     
     # Mise à jour des paquets (inutile, déjà fait au début du pipeline)
-    # apt update || error "Échec de la mise à jour des paquets"
+    apt update -qq || error "Échec de la mise à jour des paquets"
     
     # Installation de Timekpr
-    apt install -y timekpr-next || error "Échec de l'installation de Timekpr"
+    apt install -qq -y timekpr-next || error "Échec de l'installation de Timekpr"
     
     log "Timekpr-nExT installé avec succès"
 }
@@ -58,8 +58,8 @@ configure_timekpr() {
     fi
     
     # Attendre que le service soit prêt
-    echo "Attente de 5 secondes pour que le service Timekpr soit prêt..."
-    sleep 5
+    # echo "Attente de 5 secondes pour que le service Timekpr soit prêt..."
+    # sleep 5
     
     
     # Configuration des jours autorisés
@@ -72,14 +72,7 @@ configure_timekpr() {
         error "Impossible de configurer les heures autorisées"
     fi
     
-    # Configuration des limites quotidiennes
-    # Construire la chaîne des limites pour chaque jour
-    # IFS=',' read -ra DAYS <<< "$TIMEKPR_WORK_DAYS"
-    # LIMITS=""
-    # for day in "${DAYS[@]}"; do
-    #    [ -n "$LIMITS" ] && LIMITS+=";$TIMEKPR_DAILY_LIMIT_SECONDS" || LIMITS="$TIMEKPR_DAILY_LIMIT_SECONDS"
-    # done
-    
+    # Configuration des limites quotidiennes    
     if ! timekpra --settimelimits "$CHILD_USERNAME" "$TIMEKPR_DAILY_LIMIT_SECONDS"; then
         error "Impossible de configurer les limites quotidiennes"
     fi

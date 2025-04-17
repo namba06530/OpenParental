@@ -20,10 +20,12 @@ error() {
 
 # Chargement de la configuration
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-if [ -f "$SCRIPT_DIR/.env" ]; then
-    source "$SCRIPT_DIR/.env"
+if [ -f "/usr/local/bin/.env.quota" ]; then
+    source "/usr/local/bin/.env.quota"
+elif [ -f "$SCRIPT_DIR/.env.quota" ]; then
+    source "$SCRIPT_DIR/.env.quota"
 else
-    error "Fichier .env non trouvé dans $SCRIPT_DIR"
+    error "Fichier .env.quota non trouvé dans /usr/local/bin ou $SCRIPT_DIR"
 fi
 
 # Gestion de la whitelist

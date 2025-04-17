@@ -29,11 +29,32 @@ if [ "$EUID" -ne 0 ]; then
     error "Ce script doit être exécuté avec les privilèges sudo"
 fi
 
-# Installation des dépendances nécessaires
-install_dependencies() {
-    log "Installation des dépendances nécessaires (iptables, sqlite3, iproute2, libnotify-bin)"
-    # apt update supprimé car déjà fait au début du pipeline
-    apt install -y iptables sqlite3 iproute2 libnotify-bin || error "Échec de l'installation des dépendances"
+# Installation des dépendances nécessaires (déja fait au début du pipeline dans le script 00-install.sh)
+# install_dependencies() {
+    # log "Installation des dépendances nécessaires (iptables, sqlite3, iproute2, libnotify-bin)"
+    # apt install -y iptables sqlite3 iproute2 libnotify-bin || error "Échec de l'installation des dépendances"
+# }
+
+# Génération d'un .env minimal pour internet-quota.sh
+create_minimal_env() {
+    log "Génération d'un .env minimal pour internet-quota.sh (seules les variables nécessaires seront copiées)"
+    local minimal_env="/usr/local/bin/.env.quota"
+    # Liste des variables nécessaires
+    local vars=(
+        QUOTA_DAILY_MINUTES
+        QUOTA_START_TIME
+        QUOTA_RESET_TIME
+        CHILD_USERNAME
+        QUOTA_SESSION_DIR
+        WHITELIST_DOMAINS
+    )
+    > "$minimal_env"
+    for var in "${vars[@]}"; do
+        if grep -q "^$var=" .env; then
+            grep "^$var=" .env >> "$minimal_env"
+        fi
+    done
+    chmod 600 "$minimal_env"
 }
 
 # Copie du script de gestion du quota et du .env
@@ -41,9 +62,7 @@ install_quota_script() {
     log "Copie du script deploy/internet-quota.sh vers /usr/local/bin/internet-quota.sh (à faire sur la machine enfant)"
     cp "$(dirname "$0")/deploy/internet-quota.sh" /usr/local/bin/internet-quota.sh
     chmod +x /usr/local/bin/internet-quota.sh
-    log "Copie du fichier .env vers /usr/local/bin/.env (à faire sur la machine enfant)"
-    cp .env /usr/local/bin/.env
-    chmod 600 /usr/local/bin/.env
+    create_minimal_env
 }
 
 # Création des services systemd
@@ -104,7 +123,7 @@ EOF
 
 main() {
     log "Début de la configuration du quota Internet (mode simplifié)"
-    install_dependencies
+    # install_dependencies
     install_quota_script
     create_systemd_services
     log "Configuration terminée."

@@ -52,7 +52,20 @@ If you want to deploy **only the Internet quota management** on an existing devi
    ```
 
 ## 📝 Roadmap
-// ...existing code...
+
+- [x] Installation scripts (account creation, filtering, quotas, etc.)
+- [x] Unified installation script (00-install.sh, single entry point)
+- [ ] Graphical administration interface
+- [ ] Reporting and statistics system
+- [ ] Backup and restore configurations
+- [ ] Remote web administration interface
+- [ ] Automatic component updates
+- [ ] Notification system for parents
+- [ ] Improved multi-user support
+- [ ] Detailed configuration documentation
+- [ ] First-time setup assistant
+
+> 💡 Feel free to suggest new features or contribute to the roadmap!
 
 ## 🔒 Security & Privacy
 - No data sent outside the device by default.

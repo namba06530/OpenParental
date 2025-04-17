@@ -37,7 +37,7 @@ check_dependencies() {
     # Vérifier chattr
     if ! command -v chattr >/dev/null 2>&1; then
         log "Installation de l'outil chattr (e2fsprogs)"
-        apt update && apt install -y e2fsprogs || error "Impossible d'installer e2fsprogs"
+        apt install -qq -y e2fsprogs || error "Impossible d'installer e2fsprogs"
     fi
     
     # Vérifier NetworkManager
@@ -72,11 +72,11 @@ configure_resolv_conf() {
     
     if [ -f "$RESOLV_CONF" ]; then
         if [ -L "$RESOLV_CONF" ]; then
-            # Si c'est un lien symbolique, sauvegarder la cible
-            cp -P "$RESOLV_CONF" "$BACKUP_DIR/resolv.conf.backup"
-            cp "$(readlink -f $RESOLV_CONF)" "$BACKUP_DIR/resolv.conf.original"
+            # Sauvegarder le lien symbolique et sa cible réelle
+            cp --remove-destination "$RESOLV_CONF" "$BACKUP_DIR/resolv.conf.symlink"
+            cp --remove-destination "$(readlink -f "$RESOLV_CONF")" "$BACKUP_DIR/resolv.conf.original"
         else
-            cp "$RESOLV_CONF" "$BACKUP_DIR/resolv.conf.backup"
+            cp --remove-destination "$RESOLV_CONF" "$BACKUP_DIR/resolv.conf.backup"
         fi
     fi
     
@@ -95,7 +95,7 @@ configure_resolv_conf() {
     
     # Création du nouveau resolv.conf
     cat > "$RESOLV_CONF" << EOF
-# Configuration DNS forcée par ct_parent
+# Configuration DNS forcée par OpenParental
 # Date de modification: $(date)
 nameserver $DNS_PRIMARY
 nameserver $DNS_SECONDARY
@@ -148,8 +148,12 @@ show_status() {
     log "DNS secondaire : $DNS_SECONDARY"
     log "Backup stocké dans : $BACKUP_DIR"
     
-    log "Contenu actuel de $RESOLV_CONF :"
-    cat "$RESOLV_CONF"
+    log "Résumé du contenu actuel de $RESOLV_CONF :"
+    echo -e "${BLUE}----------------------${NC}"
+    grep '^nameserver' "$RESOLV_CONF" | while read -r line; do
+        echo -e "${BLUE}$line${NC}"
+    done
+    echo -e "${BLUE}----------------------${NC}"
 }
 
 # Exécution principale

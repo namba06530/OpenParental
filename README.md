@@ -104,7 +104,12 @@ Si vous souhaitez déployer **uniquement la gestion du quota Internet** sur une 
 
 ## 📝 Roadmap
 
-- [ ] Script d'installation unifié (regroupant tous les scripts)
+- [x] Scripts d'installation (création de comptes, filtrage, quotas, etc.)
+- [x] Script d'installation unifié (00-install.sh, point d'entrée unique)
+- [x] Fonction Internet Quota (gestion du quota Internet)
+- [ ] Dissociation du temps Internet et du temps d'écran (priorité)
+- [ ] Mise en place de logs détaillés pour permettre de visualiser le compteur de temps sur Internet
+- [ ] Amélioration de la gestion multi-utilisateurs pour le quota Internet et le temps d'écran
 - [ ] Interface graphique d'administration
 - [ ] Système de rapports et statistiques
 - [ ] Sauvegarde et restauration des configurations
@@ -114,6 +119,8 @@ Si vous souhaitez déployer **uniquement la gestion du quota Internet** sur une 
 - [ ] Support multi-utilisateurs amélioré
 - [ ] Documentation détaillée des options de configuration
 - [ ] Assistant de première configuration
+
+> 💡 La dissociation du temps Internet et du temps d'écran est désormais la priorité du projet. N'hésitez pas à proposer d'autres idées ou à contribuer à la roadmap !
 
 ## 🔒 Sécurité & Vie privée
 - Aucun envoi de données hors de la machine par défaut.
@@ -157,6 +164,17 @@ hBlock permet :
 - Protection contre les domaines malveillants
 - Mise à jour régulière des listes de blocage
 - Personnalisation des listes blanches/noires
+
+## 🔒 Sécurisation finale : suppression automatique des scripts et du fichier .env
+
+À la toute fin de l'installation, lors de l'exécution du script `99-final-script.sh`, une phase de sécurisation vous est proposée :
+
+- **Suppression automatique de tous les scripts d'installation** (`00-*.sh` à `99-*.sh`)
+- **Suppression du fichier `.env`** (contenant les paramètres sensibles)
+
+Cette étape permet de renforcer la sécurité en supprimant tout ce qui pourrait permettre de reconfigurer ou contourner la protection après installation.
+
+> Vous pouvez choisir d'accepter ou non cette suppression lors de l'exécution du script. Si vous refusez, pensez à supprimer manuellement ces fichiers pour une sécurité optimale.
 
 ## 🤝 Contribution
 

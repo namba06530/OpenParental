@@ -75,9 +75,6 @@ create_admin_user() {
             if [ "$ADMIN_PASSWORD" != "$ADMIN_PASSWORD_CONFIRM" ]; then
                 error "Les mots de passe ne correspondent pas"
             fi
-            
-            # Sauvegarder le mot de passe dans .env
-            # save_admin_password "$ADMIN_PASSWORD"
         fi
         
         # Création de l'utilisateur avec mot de passe
@@ -101,10 +98,10 @@ EOF
         chmod 644 "$ACCOUNTS_SERVICE_DIR/$ADMIN_USERNAME"
         
         # Redémarrage du service d'affichage si nécessaire
-        if systemctl is-active "$DISPLAY_MANAGER" >/dev/null 2>&1; then
-            log "Redémarrage de $DISPLAY_MANAGER"
-            systemctl restart "$DISPLAY_MANAGER"
-        fi
+        # if systemctl is-active "$DISPLAY_MANAGER" >/dev/null 2>&1; then
+            # log "Redémarrage de $DISPLAY_MANAGER"
+            # systemctl restart "$DISPLAY_MANAGER"
+        # fi
     fi
 }
 
