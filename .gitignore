@@ -1,0 +1,13 @@
+# .gitignore pour ct_parent
+.env
+*.log
+*.swp
+*.swo
+*.bak
+*.tmp
+__pycache__/
+*.pyc
+node_modules/
+deploy/.env
+
+todo.md
