@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Fonctions utilitaires communes
+# Common utility functions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -19,136 +19,116 @@ error() {
     exit 1
 }
 
-# Vérification de la présence du .env
+# Check for .env file presence
 if [ ! -f ".env" ]; then
-    error "Fichier .env non trouvé dans le dossier courant."
+    error ".env file not found in the current directory."
 fi
 source .env
 
-# Vérification des privilèges sudo
+# Check for sudo privileges
 if [ "$EUID" -ne 0 ]; then
-    error "Ce script doit être exécuté avec les privilèges sudo"
+    error "This script must be run with sudo privileges."
 fi
 
-# Vérification des dépendances
+# Check dependencies
 check_dependencies() {
-    log "Vérification des dépendances"
-    
-    # Vérifier chattr
+    log "Checking dependencies"
+    # Check chattr
     if ! command -v chattr >/dev/null 2>&1; then
-        log "Installation de l'outil chattr (e2fsprogs)"
-        apt install -qq -y e2fsprogs || error "Impossible d'installer e2fsprogs"
+        log "Installing chattr tool (e2fsprogs)"
+        apt install -qq -y e2fsprogs || error "Unable to install e2fsprogs"
     fi
-    
-    # Vérifier NetworkManager
+    # Check NetworkManager
     if ! command -v nmcli >/dev/null 2>&1; then
-        error "NetworkManager n'est pas installé"
+        error "NetworkManager is not installed"
     fi
 }
 
-# Configuration de NetworkManager
+# Configure NetworkManager
 configure_networkmanager() {
-    log "Configuration de NetworkManager pour ignorer les DNS DHCP"
-    
-    mkdir -p "$DNS_CONF_DIR" || error "Impossible de créer le répertoire $DNS_CONF_DIR"
-    
+    log "Configuring NetworkManager to ignore DHCP DNS"
+    mkdir -p "$DNS_CONF_DIR" || error "Unable to create directory $DNS_CONF_DIR"
     cat > "$DNS_CONF_DIR/dns-override.conf" << EOF
 [main]
 dns=none
 EOF
-    
     if [ ! -f "$DNS_CONF_DIR/dns-override.conf" ]; then
-        error "Échec de la création du fichier de configuration NetworkManager"
+        error "Failed to create NetworkManager configuration file"
     fi
 }
 
-# Configuration du fichier resolv.conf
+# Configure resolv.conf
 configure_resolv_conf() {
-    log "Configuration du fichier resolv.conf avec les DNS Cloudflare Family"
-    
-    # Sauvegarde du fichier resolv.conf original
+    log "Configuring resolv.conf with Cloudflare Family DNS"
     BACKUP_DIR="/root/dns_backup"
     mkdir -p "$BACKUP_DIR"
-    
     if [ -f "$RESOLV_CONF" ]; then
         if [ -L "$RESOLV_CONF" ]; then
-            # Sauvegarder le lien symbolique et sa cible réelle
             cp --remove-destination "$RESOLV_CONF" "$BACKUP_DIR/resolv.conf.symlink"
             cp --remove-destination "$(readlink -f "$RESOLV_CONF")" "$BACKUP_DIR/resolv.conf.original"
         else
             cp --remove-destination "$RESOLV_CONF" "$BACKUP_DIR/resolv.conf.backup"
         fi
     fi
-    
-    # Désactivation de systemd-resolved si actif
+    # Disable systemd-resolved if active
     if systemctl is-active systemd-resolved >/dev/null 2>&1; then
-        log "Arrêt de systemd-resolved"
+        log "Stopping systemd-resolved"
         systemctl stop systemd-resolved
         systemctl disable systemd-resolved
     fi
-    
-    # Suppression du symlink si existant
+    # Remove symlink if exists
     if [ -L "$RESOLV_CONF" ]; then
-        log "Suppression du lien symbolique resolv.conf"
+        log "Removing resolv.conf symlink"
         rm -f "$RESOLV_CONF"
     fi
-    
-    # Création du nouveau resolv.conf
+    # Create new resolv.conf
     cat > "$RESOLV_CONF" << EOF
-# Configuration DNS forcée par OpenParental
-# Date de modification: $(date)
+# DNS configuration forced by OpenParental
+# Last modified: $(date)
 nameserver $DNS_PRIMARY
 nameserver $DNS_SECONDARY
 EOF
-    
-    # Protection du fichier avec attributs immuables
+    # Protect file with immutable attribute
     if ! chattr +i "$RESOLV_CONF" 2>/dev/null; then
-        error "Impossible de protéger $RESOLV_CONF avec chattr. Vérifiez le support du système de fichiers."
+        error "Unable to protect $RESOLV_CONF with chattr. Check filesystem support."
     fi
 }
 
-# Vérification de la configuration
+# Verify DNS configuration
 verify_dns_config() {
-    log "Vérification de la configuration DNS"
-    
-    # Vérifier le contenu de resolv.conf
+    log "Verifying DNS configuration"
+    # Check resolv.conf content
     if ! grep -q "nameserver $DNS_PRIMARY" "$RESOLV_CONF" || ! grep -q "nameserver $DNS_SECONDARY" "$RESOLV_CONF"; then
-        error "La configuration DNS n'a pas été appliquée correctement"
+        error "DNS configuration was not applied correctly"
     fi
-    
-    # Vérifier l'attribut immuable
+    # Check immutable attribute
     if ! lsattr "$RESOLV_CONF" | grep -q '^....i'; then
-        error "L'attribut immuable n'est pas défini sur $RESOLV_CONF"
+        error "Immutable attribute is not set on $RESOLV_CONF"
     fi
-    
-    # Tester la résolution DNS avec les deux serveurs
+    # Test DNS resolution with both servers
     for dns in $DNS_PRIMARY $DNS_SECONDARY; do
         if ! dig @$dns +short cloudflare.com >/dev/null; then
-            warn "Le serveur DNS $dns ne répond pas"
+            warn "DNS server $dns is not responding"
         fi
     done
-    
-    log "Configuration DNS vérifiée avec succès"
+    log "DNS configuration successfully verified"
 }
 
-# Redémarrage des services
+# Restart services
 restart_services() {
-    log "Redémarrage des services réseau"
-    
-    systemctl restart NetworkManager || error "Échec du redémarrage de NetworkManager"
-    
-    # Attendre que le réseau soit opérationnel
+    log "Restarting network services"
+    systemctl restart NetworkManager || error "Failed to restart NetworkManager"
+    # Wait for network to be up
     sleep 2
 }
 
-# Affichage du status final
+# Show final status
 show_status() {
-    log "Configuration DNS terminée"
-    log "DNS primaire   : $DNS_PRIMARY"
-    log "DNS secondaire : $DNS_SECONDARY"
-    log "Backup stocké dans : $BACKUP_DIR"
-    
-    log "Résumé du contenu actuel de $RESOLV_CONF :"
+    log "DNS configuration completed"
+    log "Primary DNS   : $DNS_PRIMARY"
+    log "Secondary DNS : $DNS_SECONDARY"
+    log "Backup stored in : $BACKUP_DIR"
+    log "Current content summary of $RESOLV_CONF :"
     echo -e "${BLUE}----------------------${NC}"
     grep '^nameserver' "$RESOLV_CONF" | while read -r line; do
         echo -e "${BLUE}$line${NC}"
@@ -156,17 +136,17 @@ show_status() {
     echo -e "${BLUE}----------------------${NC}"
 }
 
-# Exécution principale
+# Main execution
 main() {
-    log "Début de la configuration DNS"
+    log "Starting DNS configuration"
     check_dependencies
     configure_networkmanager
     configure_resolv_conf
     restart_services
     verify_dns_config
     show_status
-    log "Configuration DNS terminée avec succès"
+    log "DNS configuration completed successfully"
 }
 
-# Lancement du script
+# Script entry point
 main

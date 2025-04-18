@@ -1,201 +1,201 @@
-# OpenParental – HandMade Parental Control Stack pour Ubuntu
+# OpenParental – HandMade Parental Control Stack for Ubuntu
 
 ![MIT License](https://img.shields.io/badge/license-MIT-green.svg)
 
-Une solution **open source** complète de contrôle parental pour Ubuntu, pensée pour être simple, robuste, et accessible à tous. Ce projet vise à offrir aux familles un contrôle efficace du temps d'écran et d'Internet, tout en respectant la vie privée et la philosophie du logiciel libre.
+A complete **open source** parental control solution for Ubuntu, designed to be simple, robust, and accessible to all. This project aims to provide families with effective control over screen time and Internet access, while respecting privacy and the philosophy of free software.
 
-## 🚀 Pourquoi ce projet ?
-- **Liberté** : 100% open source, modifiable et partageable.
-- **Simplicité** : Installation guidée par scripts, pas de dépendance à des solutions propriétaires.
-- **Sécurité** : Séparation stricte des comptes, filtrage multicouche, configuration SSH sécurisée.
-- **Communauté** : Ouvert à la contribution, pour améliorer ensemble la protection numérique des familles.
+## 🚀 Why this project?
+- **Freedom**: 100% open source, modifiable and shareable.
+- **Simplicity**: Guided installation via scripts, no dependency on proprietary solutions.
+- **Security**: Strict account separation, multi-layer filtering, secure SSH configuration.
+- **Community**: Open to contributions, to improve digital protection for families together.
 
-## 📁 Structure du projet
+## 📁 Project Structure
 
 ```
 ct_parent/
-├── 00-install.sh                         # Orchestration de l'installation complète
-├── 01-create-hidden-admin-user.sh        # Création du compte administrateur
-├── 02-install-and-configure-ssh.sh       # Configuration de l'accès SSH
-├── 03-force-custom-dns.sh                # Configuration DNS sécurisé
-├── 04-install-and-configure-hblock.sh    # Installation du filtrage web
-├── 05-install-and-configure-Timekpr.sh   # Contrôle du temps d'écran
-├── 06-set-internet-quota.sh              # Gestion des quotas Internet (installation/configuration)
+├── 00-install.sh                         # Orchestrates the complete installation
+├── 01-create-hidden-admin-user.sh        # Creates the admin account
+├── 02-install-and-configure-ssh.sh       # Configures SSH access
+├── 03-force-custom-dns.sh                # Secure DNS configuration
+├── 04-install-and-configure-hblock.sh    # Web filtering installation
+├── 05-install-and-configure-Timekpr.sh   # Screen time control
+├── 06-set-internet-quota.sh              # Internet quota management (install/config)
 ├── deploy/
-│   └── internet-quota.sh                 # Script à déployer sur les machines enfants pour le quota Internet
-└── README.md                             # Documentation
+│   └── internet-quota.sh                 # Script to deploy on child machines for Internet quota
+└── README.fr.md                          # French documentation
 ```
 
-## 🎯 Objectifs du projet
+## 🎯 Project Goals
 
-- Fournir un contrôle parental robuste et personnalisable
-- Faciliter le déploiement et la configuration
-- Permettre un suivi et une gestion efficace du temps d'écran et d'Internet
-- Protéger les enfants des contenus inappropriés sur Internet
+- Provide robust and customizable parental control
+- Simplify deployment and configuration
+- Enable effective monitoring and management of screen and Internet time
+- Protect children from inappropriate online content
 
-## 🛠 Composants de la solution
+## 🛠 Solution Components
 
-### 1. Gestion des comptes
-- Création d'un compte administrateur caché
-- Séparation des privilèges entre admin et utilisateurs
-- Protection de l'accès aux paramètres système
+### 1. Account Management
+- Creation of a hidden admin account
+- Separation of privileges between admin and users
+- Protection of access to system settings
 
-### 2. Accès distant sécurisé
-- Configuration SSH pour administration à distance
-- Sécurisation des accès
-- Monitoring à distance
+### 2. Secure Remote Access
+- SSH configuration for remote administration
+- Securing access
+- Remote monitoring
 
-### 3. Filtrage DNS
-- Configuration automatique des DNS Cloudflare Family (1.1.1.3 et 1.0.0.3)
-- Blocage des contenus malveillants et pour adultes
-- Protection contre la modification des paramètres DNS
+### 3. DNS Filtering
+- Automatic configuration of Cloudflare Family DNS (1.1.1.3 and 1.0.0.3)
+- Blocking of malicious and adult content
+- Protection against DNS settings modification
 
-### 4. Filtrage Web avec hBlock
-- Blocage avancé des publicités, trackers et contenus malveillants
-- Mise à jour automatique des listes de blocage
-- Protection supplémentaire via le fichier hosts système
+### 4. Web Filtering with hBlock
+- Advanced blocking of ads, trackers, and malicious content
+- Automatic update of blocklists
+- Additional protection via the system hosts file
 
-### 5. Contrôle du temps d'écran (Timekpr-nExT)
-- Limitation du temps d'utilisation de l'ordinateur
-- Définition de plages horaires autorisées
-- Suivi détaillé du temps d'utilisation
+### 5. Screen Time Control (Timekpr-nExT)
+- Limiting computer usage time
+- Defining allowed time slots
+- Detailed usage tracking
 
-### 6. Gestion de la connexion Internet (Quota)
-- Limitation du temps de connexion Internet
-- Système de quota personnalisable
-- Monitoring de l'utilisation
-- Script dédié à déployer sur chaque machine enfant
+### 6. Internet Connection Management (Quota)
+- Limiting Internet connection time
+- Customizable quota system
+- Usage monitoring
+- Dedicated script to deploy on each child machine
 
-## 📋 Prérequis
+## 📋 Prerequisites
 
-- Ubuntu (version recommandée : 22.04 LTS ou supérieure)
-- Un compte utilisateur avec droits sudo pour l'installation initiale
+- Ubuntu (recommended version: 22.04 LTS or higher)
+- A user account with sudo rights for initial installation
 - NetworkManager
-- Connexion Internet pour l'installation des composants
+- Internet connection to install components
 
-## 🚀 Installation standard (famille, école, association...)
+## 🚀 Standard Installation (family, school, association...)
 
-1. **Cloner le dépôt**
+1. **Clone the repository**
    ```bash
    git clone https://github.com/namba06530/OpenParental.git
    cd OpenParental
    ```
-2. **Personnaliser le fichier** `.env` (un exemple prêt à l'emploi est fourni sous le nom `.env.example`)
-3. **Lancer l'installation complète**
+2. **Customize the** `.env` **file** (a ready-to-use example is provided as `.env.example`)
+3. **Run the full installation**
    ```bash
    sudo ./00-install.sh
    ```
 
-C'est tout ! Le script 00-install.sh s'occupe de tout : création des comptes, configuration réseau, filtrage, quotas, antivirus, sécurisation finale, etc.
+That's it! The 00-install.sh script takes care of everything: account creation, network configuration, filtering, quotas, antivirus, final hardening, etc.
 
-> **Astuce** : Cette méthode fonctionne aussi bien pour un poste familial que pour un parc d'ordinateurs en école ou lieu public.
+> **Tip**: This method works for both a family computer and a fleet of computers in a school or public place.
 
-## 🚚 Déploiement sur les machines enfants
+## 🚚 Deployment on Child Machines
 
-> **Remarque** : Pour la plupart des usages, il suffit de suivre la procédure d'installation standard ci-dessus sur chaque machine à protéger. Le script 00-install.sh configure automatiquement la gestion du quota Internet, le filtrage, la sécurité, etc.
+> **Note**: For most use cases, simply follow the standard installation procedure above on each machine to be protected. The 00-install.sh script automatically configures Internet quota management, filtering, security, etc.
 
-Si vous souhaitez déployer **uniquement la gestion du quota Internet** sur une machine déjà existante (cas avancé) :
+If you want to deploy **only the Internet quota management** on an existing machine (advanced use case):
 
-1. Clonez le dépôt et adaptez le .env
-2. Lancez uniquement :
+1. Clone the repository and adapt the .env
+2. Run only:
    ```bash
    sudo ./06-set-internet-quota.sh
    ```
 
 ## 📝 Roadmap
 
-- [x] Scripts d'installation (création de comptes, filtrage, quotas, etc.)
-- [x] Script d'installation unifié (00-install.sh, point d'entrée unique)
-- [x] Fonction Internet Quota (gestion du quota Internet)
-- [ ] Dissociation du temps Internet et du temps d'écran (priorité)
-- [ ] Mise en place de logs détaillés pour permettre de visualiser le compteur de temps sur Internet
-- [ ] Amélioration de la gestion multi-utilisateurs pour le quota Internet et le temps d'écran
-- [ ] Interface graphique d'administration
-- [ ] Système de rapports et statistiques
-- [ ] Sauvegarde et restauration des configurations
-- [ ] Interface web d'administration à distance
-- [ ] Mise à jour automatique des composants
-- [ ] Système de notifications pour les parents
-- [ ] Support multi-utilisateurs amélioré
-- [ ] Documentation détaillée des options de configuration
-- [ ] Assistant de première configuration
+- [x] Installation scripts (account creation, filtering, quotas, etc.)
+- [x] Unified installation script (00-install.sh, single entry point)
+- [x] Internet Quota feature (Internet quota management)
+- [ ] Separation of Internet time and screen time (priority)
+- [ ] Implementation of detailed logs so parents can view Internet time counter
+- [ ] Improved multi-user management for Internet quota and screen time
+- [ ] Graphical administration interface
+- [ ] Reporting and statistics system
+- [ ] Backup and restore configurations
+- [ ] Remote web administration interface
+- [ ] Automatic component updates
+- [ ] Notification system for parents
+- [ ] Enhanced multi-user support
+- [ ] Detailed configuration documentation
+- [ ] First-time setup assistant
 
-> 💡 La dissociation du temps Internet et du temps d'écran est désormais la priorité du projet. N'hésitez pas à proposer d'autres idées ou à contribuer à la roadmap !
+> 💡 The separation of Internet time and screen time is now the project's top priority. Feel free to suggest new ideas or contribute to the roadmap!
 
-## 🔒 Sécurité & Vie privée
-- Aucun envoi de données hors de la machine par défaut.
-- Les logs et quotas restent locaux.
-- Les parents restent responsables de la supervision.
+## 🔒 Security & Privacy
+- No data sent outside the machine by default.
+- Logs and quotas remain local.
+- Parents remain responsible for supervision.
 
-## 📚 Documentation détaillée
+## 📚 Detailed Documentation
 
-### Compte Administrateur
-- Création d'un compte admin caché
-- Configuration des droits sudo
-- Protection de l'interface de connexion
+### Admin Account
+- Creation of a hidden admin account
+- Sudo rights configuration
+- Login interface protection
 
-### Configuration SSH
-- Installation sécurisée
-- Configuration des clés et accès
-- Paramètres de sécurité recommandés
+### SSH Configuration
+- Secure installation
+- Key and access configuration
+- Recommended security settings
 
-### Configuration DNS
-Le script `03-force-custom-dns.sh` :
-- Configure NetworkManager pour ignorer les DNS DHCP
-- Utilise les DNS Cloudflare Family pour le filtrage
-- Protège la configuration contre les modifications
+### DNS Configuration
+The `03-force-custom-dns.sh` script:
+- Configures NetworkManager to ignore DHCP DNS
+- Uses Cloudflare Family DNS for filtering
+- Protects the configuration from changes
 
-### Gestion du temps
-Timekpr-nExT permet :
-- Définir des limites quotidiennes
-- Configurer des plages horaires
-- Gérer plusieurs comptes utilisateurs
+### Time Management
+Timekpr-nExT allows:
+- Setting daily limits
+- Configuring allowed time slots
+- Managing multiple user accounts
 
-### Quota Internet
-Le script `deploy/internet-quota.sh` gère :
-- La limitation du temps de connexion
-- Le suivi de la consommation
-- Les règles de quota personnalisées
-- Les notifications et la gestion de la whitelist
+### Internet Quota
+The `deploy/internet-quota.sh` script manages:
+- Limiting connection time
+- Usage tracking
+- Custom quota rules
+- Notifications and whitelist management
 
-### Filtrage avec hBlock
-hBlock permet :
-- Blocage des publicités et trackers
-- Protection contre les domaines malveillants
-- Mise à jour régulière des listes de blocage
-- Personnalisation des listes blanches/noires
+### Filtering with hBlock
+hBlock allows:
+- Blocking ads and trackers
+- Protection against malicious domains
+- Regular update of blocklists
+- Customization of whitelists/blacklists
 
-## 🔒 Sécurisation finale : suppression automatique des scripts et du fichier .env
+## 🔒 Final Hardening: Automatic Removal of Scripts and .env File
 
-À la toute fin de l'installation, lors de l'exécution du script `99-final-script.sh`, une phase de sécurisation vous est proposée :
+At the very end of the installation, when running the `99-final-script.sh` script, a hardening phase is offered:
 
-- **Suppression automatique de tous les scripts d'installation** (`00-*.sh` à `99-*.sh`)
-- **Suppression du fichier `.env`** (contenant les paramètres sensibles)
+- **Automatic removal of all installation scripts** (`00-*.sh` to `99-*.sh`)
+- **Removal of the `.env` file** (containing sensitive parameters)
 
-Cette étape permet de renforcer la sécurité en supprimant tout ce qui pourrait permettre de reconfigurer ou contourner la protection après installation.
+This step strengthens security by removing anything that could allow reconfiguration or bypassing protection after installation.
 
-> Vous pouvez choisir d'accepter ou non cette suppression lors de l'exécution du script. Si vous refusez, pensez à supprimer manuellement ces fichiers pour une sécurité optimale.
+> You can choose to accept or refuse this removal when running the script. If you refuse, remember to manually delete these files for optimal security.
 
-## 🤝 Contribution
+## 🤝 Contributing
 
-Les contributions sont **bienvenues** !
+Contributions are **welcome**!
 
-- Forkez le projet
-- Créez une branche (`git checkout -b feature/ma-feature`)
-- Commitez vos modifications (`git commit -am 'Ajout de ma feature'`)
-- Poussez la branche (`git push origin feature/ma-feature`)
-- Ouvrez une Pull Request
+- Fork the project
+- Create a branch (`git checkout -b feature/my-feature`)
+- Commit your changes (`git commit -am 'Add my feature'`)
+- Push the branch (`git push origin feature/my-feature`)
+- Open a Pull Request
 
-Pour toute question, suggestion ou bug, ouvrez une [issue](https://github.com/votre-utilisateur/ct_parent/issues) ou participez aux discussions.
+For any questions, suggestions, or bugs, open an [issue](https://github.com/your-username/OpenParental/issues) or join the discussions.
 
-## 📄 Licence
+## 📄 License
 
-Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE).
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file.
 
-## ⚠️ Avertissement & Éthique
+## ⚠️ Disclaimer & Ethics
 
-Ce projet est fourni "en l'état", sans garantie. Il vise à aider les familles à mieux gérer le numérique, dans le respect de la vie privée et de l'éthique. **N'utilisez jamais ce projet pour surveiller ou restreindre autrui sans consentement.**
+This project is provided "as is", without warranty. It aims to help families better manage digital usage, respecting privacy and ethics. **Never use this project to monitor or restrict others without consent.**
 
 ---
 
-> _Fait avec ❤️ par la communauté open source. Rejoignez-nous pour améliorer la sécurité numérique des familles !_
+> _Made with ❤️ by the open source community. Join us to improve digital safety for families!_

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Fonctions utilitaires communes
+# Common utility functions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -19,101 +19,95 @@ error() {
     exit 1
 }
 
-# Vérification de la présence du .env
+# Check for .env file presence
 if [ ! -f ".env" ]; then
-    error "Fichier .env non trouvé dans le dossier courant."
+    error ".env file not found in the current directory."
 fi
 source .env
 
-# Vérification des privilèges sudo
+# Check for sudo privileges
 if [ "$EUID" -ne 0 ]; then
-    error "Ce script doit être exécuté avec les privilèges sudo"
+    error "This script must be run with sudo privileges."
 fi
 
-# Vérification de l'existence du compte enfant
+# Check if child account exists
 check_child_account() {
-    log "Vérification du compte enfant"
+    log "Checking child account"
     if ! id "$CHILD_USERNAME" >/dev/null 2>&1; then
-        log "Le compte enfant $CHILD_USERNAME n'existe pas, création..."
+        log "Child account $CHILD_USERNAME does not exist, creating..."
         useradd -m -s /bin/bash "$CHILD_USERNAME"
-        # Demander un mot de passe pour le compte enfant
+        # Prompt for child account password
         passwd "$CHILD_USERNAME"
     else
-        log "Le compte enfant $CHILD_USERNAME existe déjà"
+        log "Child account $CHILD_USERNAME already exists"
     fi
 }
 
-# Sauvegarde du mot de passe admin dans .env de manière sécurisée
+# Securely save admin password in .env
 save_admin_password() {
     local password=$1
     local env_file=".env"
     local temp_file=$(mktemp)
-    
-    # Créer une copie temporaire du fichier .env sans la ligne ADMIN_PASSWORD
+    # Create a temporary copy of .env without ADMIN_PASSWORD line
     grep -v "^ADMIN_PASSWORD=" "$env_file" > "$temp_file"
-    # Ajouter le nouveau mot de passe
+    # Add the new password
     echo "ADMIN_PASSWORD='$password'" >> "$temp_file"
-    # Remplacer l'ancien fichier
+    # Replace the old file
     mv "$temp_file" "$env_file"
     chmod 600 "$env_file"
 }
 
-# Vérification et création de l'utilisateur admin
+# Check and create admin user
 create_admin_user() {
     if id "$ADMIN_USERNAME" &>/dev/null; then
-        log "L'utilisateur $ADMIN_USERNAME existe déjà"
+        log "User $ADMIN_USERNAME already exists"
     else
-        log "Création de l'utilisateur $ADMIN_USERNAME"
-        
-        # Si le mot de passe n'est pas défini dans .env, le demander
+        log "Creating user $ADMIN_USERNAME"
+        # If password is not set in .env, prompt for it
         if [ -z "$ADMIN_PASSWORD" ]; then
-            read -s -p "Entrez le mot de passe pour $ADMIN_USERNAME: " ADMIN_PASSWORD
+            read -s -p "Enter password for $ADMIN_USERNAME: " ADMIN_PASSWORD
             echo
-            read -s -p "Confirmez le mot de passe: " ADMIN_PASSWORD_CONFIRM
+            read -s -p "Confirm password: " ADMIN_PASSWORD_CONFIRM
             echo
-            
             if [ "$ADMIN_PASSWORD" != "$ADMIN_PASSWORD_CONFIRM" ]; then
-                error "Les mots de passe ne correspondent pas"
+                error "Passwords do not match"
             fi
         fi
-        
-        # Création de l'utilisateur avec mot de passe
+        # Create user with password
         useradd -m -s /bin/bash "$ADMIN_USERNAME"
         echo "$ADMIN_USERNAME:$ADMIN_PASSWORD" | chpasswd
     fi
-    # Ajout aux groupes spécifiés (toujours exécuté)
+    # Always add to specified groups
     usermod -aG "$ADMIN_GROUPS" "$ADMIN_USERNAME"
 }
 
-# Configuration pour masquer l'utilisateur admin
+# Configure admin user visibility
 configure_user_visibility() {
     if [ "$HIDE_ADMIN_USER" = true ]; then
-        log "Configuration pour masquer l'utilisateur $ADMIN_USERNAME"
-        
+        log "Configuring to hide user $ADMIN_USERNAME from login screen"
         mkdir -p "$ACCOUNTS_SERVICE_DIR"
         cat > "$ACCOUNTS_SERVICE_DIR/$ADMIN_USERNAME" << EOF
 [User]
 SystemAccount=true
 EOF
         chmod 644 "$ACCOUNTS_SERVICE_DIR/$ADMIN_USERNAME"
-        
-        # Redémarrage du service d'affichage si nécessaire
+        # Optionally restart display manager if needed
         # if systemctl is-active "$DISPLAY_MANAGER" >/dev/null 2>&1; then
-            # log "Redémarrage de $DISPLAY_MANAGER"
+            # log "Restarting $DISPLAY_MANAGER"
             # systemctl restart "$DISPLAY_MANAGER"
         # fi
     fi
 }
 
-# Exécution principale
+# Main execution
 main() {
-    log "Début de la configuration des utilisateurs"
+    log "Starting user configuration"
     check_child_account
     create_admin_user
     configure_user_visibility
-    log "Configuration terminée avec succès"
+    log "User configuration completed successfully"
 }
 
-# Lancement du script
+# Script entry point
 main
 

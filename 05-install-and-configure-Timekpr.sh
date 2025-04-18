@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Fonctions utilitaires communes
+# Common utility functions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -19,137 +19,132 @@ error() {
     exit 1
 }
 
-# Vérification de la présence du .env
+# Check for .env file presence
 if [ ! -f ".env" ]; then
-    error "Fichier .env non trouvé dans le dossier courant."
+    error ".env file not found in current directory."
 fi
 source .env
 
-# Vérification des privilèges sudo
+# Check for sudo privileges
 if [ "$EUID" -ne 0 ]; then
-    error "Ce script doit être exécuté avec les privilèges sudo"
+    error "This script must be run with sudo privileges"
 fi
 
-# Installation de Timekpr-nExT
+# Installing Timekpr-nExT
 install_timekpr() {
-    log "Installation de Timekpr-nExT"
+    log "Installing Timekpr-nExT"
     
-    # Ajout du PPA
+    # Adding PPA repository
     if ! add-apt-repository -y ppa:mjasnik/ppa; then
-        error "Impossible d'ajouter le PPA Timekpr"
+        error "Unable to add Timekpr PPA"
     fi
     
-    # Mise à jour des paquets (inutile, déjà fait au début du pipeline)
-    apt update -qq || error "Échec de la mise à jour des paquets"
+    # Update packages (unnecessary, already done at pipeline start)
+    apt update -qq || error "Failed to update packages"
     
-    # Installation de Timekpr
-    apt install -qq -y timekpr-next || error "Échec de l'installation de Timekpr"
+    # Install Timekpr
+    apt install -qq -y timekpr-next || error "Failed to install Timekpr"
     
-    log "Timekpr-nExT installé avec succès"
+    log "Timekpr-nExT installed successfully"
 }
 
-# Configuration de base de Timekpr
+# Basic Timekpr configuration
 configure_timekpr() {
-    log "Configuration de Timekpr pour l'utilisateur $CHILD_USERNAME"
+    log "Configuring Timekpr for user $CHILD_USERNAME"
     
-    # Vérifier que l'utilisateur existe
+    # Check if user exists
     if ! id "$CHILD_USERNAME" >/dev/null 2>&1; then
-        error "L'utilisateur $CHILD_USERNAME n'existe pas"
+        error "User $CHILD_USERNAME does not exist"
     fi
     
-    # Attendre que le service soit prêt
-    # echo "Attente de 5 secondes pour que le service Timekpr soit prêt..."
-    # sleep 5
-    
-    
-    # Configuration des jours autorisés
+    # Set allowed days
     if ! timekpra --setalloweddays "$CHILD_USERNAME" "$TIMEKPR_WORK_DAYS"; then
-        error "Impossible de configurer les jours autorisés"
+        error "Unable to configure allowed days"
     fi
     
-    # Configuration des heures autorisées
+    # Set allowed hours
     if ! timekpra --setallowedhours "$CHILD_USERNAME" "ALL" "$TIMEKPR_ALLOWED_HOURS"; then
-        error "Impossible de configurer les heures autorisées"
+        error "Unable to configure allowed hours"
     fi
     
-    # Configuration des limites quotidiennes    
+    # Set daily limits    
     if ! timekpra --settimelimits "$CHILD_USERNAME" "$TIMEKPR_DAILY_LIMIT_SECONDS"; then
-        error "Impossible de configurer les limites quotidiennes"
+        error "Unable to configure daily limits"
     fi
     
-    # Configuration de la limite hebdomadaire
+    # Set weekly limit
     if ! timekpra --settimelimitweek "$CHILD_USERNAME" "$TIMEKPR_WEEKLY_LIMIT_SECONDS"; then
-        error "Impossible de configurer la limite hebdomadaire"
+        error "Unable to configure weekly limit"
     fi
 
-    # Configuration de la limite mensuelle
+    # Set monthly limit
     if ! timekpra --settimelimitmonth "$CHILD_USERNAME" "$TIMEKPR_MONTHLY_LIMIT_SECONDS"; then
-        error "Impossible de configurer la limite mensuelle"
+        error "Unable to configure monthly limit"
     fi
     
-    log "Configuration de base terminée"
+    log "Basic configuration completed"
 }
 
-# Configuration avancée
+# Advanced configuration
 configure_advanced_settings() {
-    log "Configuration des paramètres avancés"
+    log "Configuring advanced settings"
     
-    # Configuration du type de déconnexion
+    # Configure logout type
     if ! timekpra --setlockouttype "$CHILD_USERNAME" "$TIMEKPR_AUTO_LOGOUT"; then
-        error "Impossible de configurer le type de déconnexion"
+        error "Unable to configure logout type"
     fi
     
-    # Configuration du suivi d'inactivité
+    # Configure inactivity tracking
     if ! timekpra --settrackinactive "$CHILD_USERNAME" "$TIMEKPR_TRACK_INACTIVITY"; then
-        error "Impossible de configurer le suivi d'inactivité"
+        error "Unable to configure inactivity tracking"
     fi
     
-    # Configuration de l'icône de la barre des tâches
+    # Configure taskbar icon
     if ! timekpra --sethidetrayicon "$CHILD_USERNAME" "$TIMEKPR_HIDE_TRAY"; then
-        error "Impossible de configurer l'icône"
+        error "Unable to configure tray icon"
     fi
     
-    log "Configuration avancée terminée"
+    log "Advanced configuration completed"
 }
 
-# Vérification de la configuration
+# Configuration verification
 verify_configuration() {
-    log "Vérification de la configuration"
+    log "Verifying configuration"
     
-    # Vérifier que le service est actif
+    # Check if service is active
     if ! systemctl is-active --quiet timekpr.service; then
-        error "Le service Timekpr n'est pas actif"
+        error "Timekpr service is not active"
     fi
     
-    # Récupérer et vérifier les informations de l'utilisateur
+    # Get and verify user information
     if ! timekpra --userinfo "$CHILD_USERNAME" | grep -q "LIMITS_PER_WEEKDAYS: $TIMEKPR_DAILY_LIMIT_SECONDS"; then
-        warn "La limite quotidienne pourrait ne pas être correctement configurée"
+        warn "Daily limit might not be properly configured"
     fi
     
-    log "Configuration vérifiée avec succès"
+    log "Configuration verified successfully"
 }
 
-# Affichage du statut
+# Display status
 show_status() {
-    log "Configuration de Timekpr terminée"
-    log "Utilisateur configuré : $CHILD_USERNAME"
-    log "Limite quotidienne : $TIMEKPR_DAILY_LIMIT_SECONDS secondes"
-    log "Heures d'accès : $TIMEKPR_START_TIME - $TIMEKPR_END_TIME"
+    log "Timekpr configuration completed"
+    log "Configured user: $CHILD_USERNAME"
+    log "Daily limit: $TIMEKPR_DAILY_LIMIT_SECONDS seconds"
+    log "Access hours: $TIMEKPR_START_TIME - $TIMEKPR_END_TIME"
     
-    # Afficher la configuration complète
+    # Show complete configuration
     timekpra --userinfo "$CHILD_USERNAME"
 }
 
-# Exécution principale
+# Main execution
 main() {
-    log "Début de l'installation et configuration de Timekpr"
+    log "Starting Timekpr installation and configuration"
     install_timekpr
     configure_timekpr
     configure_advanced_settings
     verify_configuration
     show_status
-    log "Installation et configuration de Timekpr terminées avec succès"
+    log "Timekpr installation and configuration completed successfully"
 }
 
-# Lancement du script
+# Launch script
 main

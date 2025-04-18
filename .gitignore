@@ -9,5 +9,3 @@ __pycache__/
 *.pyc
 node_modules/
 deploy/.env
-
-todo.md

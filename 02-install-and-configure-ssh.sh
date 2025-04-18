@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Fonctions utilitaires communes
+# Common utility functions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -19,62 +19,55 @@ error() {
     exit 1
 }
 
-# Vérification de la présence du .env
+# Check for .env file presence
 if [ ! -f ".env" ]; then
-    error "Fichier .env non trouvé dans le dossier courant."
+    error ".env file not found in the current directory."
 fi
 source .env
 
-# Vérification des privilèges sudo
+# Check for sudo privileges
 if [ "$EUID" -ne 0 ]; then
-    error "Ce script doit être exécuté avec les privilèges sudo"
+    error "This script must be run with sudo privileges."
 fi
 
-# Sauvegarde de la clé SSH dans .env
+# Save SSH key in .env
 save_ssh_key() {
     local key=$1
     local env_file=".env"
     local temp_file=$(mktemp)
-    
     grep -v "^SSH_PUBLIC_KEY=" "$env_file" > "$temp_file"
     echo "SSH_PUBLIC_KEY='$key'" >> "$temp_file"
     mv "$temp_file" "$env_file"
     chmod 600 "$env_file"
 }
 
-# Installation du serveur SSH
+# Install SSH server
 install_ssh_server() {
-    log "Installation du serveur SSH"
-    apt install -qq -y openssh-server || error "Impossible d'installer openssh-server"
+    log "Installing SSH server"
+    apt install -qq -y openssh-server || error "Unable to install openssh-server"
     systemctl enable ssh
     systemctl start ssh
 }
 
-# Configuration du répertoire .ssh
+# Setup .ssh directory
 setup_ssh_directory() {
-    log "Configuration du répertoire SSH pour $ADMIN_USERNAME"
-    
-    # Création du répertoire .ssh et backup
+    log "Setting up SSH directory for $ADMIN_USERNAME"
     SSH_DIR="/home/$ADMIN_USERNAME/.ssh"
     SSH_BACKUP_DIR="/root/.ssh/backup"
-    
     mkdir -p "$SSH_DIR" "$SSH_BACKUP_DIR"
-    
-    # Si la clé publique n'est pas dans .env, la demander
+    # If public key is not in .env, prompt for it
     if [ -z "$SSH_PUBLIC_KEY" ]; then
-        read -p "Entrez la clé publique SSH pour $ADMIN_USERNAME: " SSH_PUBLIC_KEY
+        read -p "Enter SSH public key for $ADMIN_USERNAME: " SSH_PUBLIC_KEY
         if [ -z "$SSH_PUBLIC_KEY" ]; then
-            error "La clé publique SSH est requise"
+            error "SSH public key is required"
         fi
-        # Sauvegarder la clé dans .env
+        # Save key in .env
         save_ssh_key "$SSH_PUBLIC_KEY"
     fi
-    
-    # Création du fichier authorized_keys et backup
+    # Create authorized_keys and backup
     echo "$SSH_PUBLIC_KEY" > "$SSH_DIR/authorized_keys"
     cp "$SSH_DIR/authorized_keys" "$SSH_BACKUP_DIR/authorized_keys_$ADMIN_USERNAME"
-    
-    # Configuration des permissions
+    # Set permissions
     chown -R "$ADMIN_USERNAME:$ADMIN_USERNAME" "$SSH_DIR"
     chmod 700 "$SSH_DIR"
     chmod 600 "$SSH_DIR/authorized_keys"
@@ -82,21 +75,17 @@ setup_ssh_directory() {
     chmod 600 "$SSH_BACKUP_DIR/authorized_keys_$ADMIN_USERNAME"
 }
 
-# Configuration sécurisée de SSH
+# Secure SSH configuration
 configure_ssh() {
-    log "Configuration sécurisée de SSH"
-    
+    log "Securing SSH configuration"
     SSHD_CONFIG="/etc/ssh/sshd_config"
-    
-    # Sauvegarde du fichier de configuration original
+    # Backup original config
     cp "$SSHD_CONFIG" "${SSHD_CONFIG}.backup"
-    
-    # Expansion de la variable ADMIN_USERNAME dans AllowUsers
+    # Expand ADMIN_USERNAME in AllowUsers
     local allowed_users="${ADMIN_USERNAME}"
-    
-    # Configuration SSH sécurisée
+    # Secure SSH config
     cat > "$SSHD_CONFIG" << EOF
-# Configuration SSH sécurisée
+# Secure SSH configuration
 Port ${SSH_PORT}
 PermitRootLogin ${SSH_PERMIT_ROOT_LOGIN}
 PasswordAuthentication ${SSH_PASSWORD_AUTHENTICATION}
@@ -110,46 +99,40 @@ MaxAuthTries 3
 ClientAliveInterval 300
 ClientAliveCountMax 0
 EOF
-    
-    # Test de la configuration
-    sshd -t || error "Configuration SSH invalide"
-    
-    # Redémarrage du service SSH
+    # Test configuration
+    sshd -t || error "Invalid SSH configuration"
+    # Restart SSH service
     systemctl restart ssh
 }
 
-# Vérification finale
+# Final verification
 verify_ssh() {
-    log "Vérification de la configuration SSH"
-    
-    # Vérifier le service
-    if ! systemctl is-active --quiet ssh; then
-        error "Le service SSH n'est pas actif"
+    log "Verifying SSH configuration"
+    # Check service
+    if (! systemctl is-active --quiet ssh); then
+        error "SSH service is not active"
     fi
-    
-    # Vérifier la configuration
-    if ! grep -q "^Port ${SSH_PORT}" "$SSHD_CONFIG"; then
-        error "La configuration du port SSH n'a pas été appliquée"
+    # Check config
+    if (! grep -q "^Port ${SSH_PORT}" "$SSHD_CONFIG"); then
+        error "SSH port configuration was not applied"
     fi
-    
-    # Vérifier les backups
+    # Check backups
     if [ ! -f "/root/.ssh/backup/authorized_keys_$ADMIN_USERNAME" ]; then
-        error "La sauvegarde de la clé SSH n'existe pas"
+        error "SSH key backup does not exist"
     fi
-    
-    log "Configuration SSH vérifiée avec succès"
+    log "SSH configuration successfully verified"
 }
 
-# Exécution principale
+# Main execution
 main() {
-    log "Début de la configuration SSH"
+    log "Starting SSH configuration"
     install_ssh_server
     setup_ssh_directory
     configure_ssh
     verify_ssh
-    log "Configuration SSH terminée avec succès"
+    log "SSH configuration completed successfully"
 }
 
-# Lancement du script
+# Script entry point
 main
 

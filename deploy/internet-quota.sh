@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Fonctions utilitaires
+# Utility functions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -18,17 +18,17 @@ error() {
     exit 1
 }
 
-# Chargement de la configuration
+# Load configuration
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [ -f "/usr/local/bin/.env.quota" ]; then
     source "/usr/local/bin/.env.quota"
 elif [ -f "$SCRIPT_DIR/.env.quota" ]; then
     source "$SCRIPT_DIR/.env.quota"
 else
-    error "Fichier .env.quota non trouvé dans /usr/local/bin ou $SCRIPT_DIR"
+    error ".env.quota file not found in /usr/local/bin or $SCRIPT_DIR"
 fi
 
-# Gestion de la whitelist
+# Whitelist management
 generate_whitelist() {
     iptables -F WHITELIST 2>/dev/null || iptables -N WHITELIST
     for DOMAIN in "${WHITELIST_DOMAINS[@]}"; do
@@ -40,7 +40,7 @@ generate_whitelist() {
     iptables -C OUTPUT -j WHITELIST 2>/dev/null || iptables -I OUTPUT 1 -j WHITELIST
 }
 
-# Blocage Internet si quota dépassé
+# Block Internet if quota exceeded
 block_internet() {
     iptables -C QUOTA_TIME -m owner --uid-owner "$CHILD_USERNAME" -j DROP 2>/dev/null || \
         iptables -A QUOTA_TIME -m owner --uid-owner "$CHILD_USERNAME" -j DROP
@@ -50,7 +50,7 @@ delete_block() {
     iptables -D QUOTA_TIME -m owner --uid-owner "$CHILD_USERNAME" -j DROP 2>/dev/null || true
 }
 
-# Notification graphique
+# Graphical notification
 send_notification() {
     local title="$1"
     local message="$2"
@@ -64,7 +64,7 @@ send_notification() {
     fi
 }
 
-# Suivi du quota (mode track)
+# Quota tracking (track mode)
 track_quota() {
     local DATE=$(date +%Y-%m-%d)
     local LOG_FILE="$QUOTA_SESSION_DIR/$CHILD_USERNAME.log"
@@ -76,26 +76,26 @@ track_quota() {
     echo "$DATE $NEW_MINUTES" >> "$LOG_FILE"
     local REMAINING=$((QUOTA_DAILY_MINUTES - NEW_MINUTES))
     if [ $REMAINING -eq 10 ]; then
-        send_notification "Quota Internet" "Il reste 10 minutes d'Internet aujourd'hui !" "normal" "clock"
+        send_notification "Internet Quota" "10 minutes of Internet remaining today!" "normal" "clock"
     elif [ $REMAINING -eq 5 ]; then
-        send_notification "Quota Internet" "Plus que 5 minutes d'Internet !" "critical" "clock"
+        send_notification "Internet Quota" "Only 5 minutes of Internet left!" "critical" "clock"
     elif [ $REMAINING -le 0 ]; then
-        send_notification "Quota Internet" "Accès Internet bloqué jusqu'à minuit" "critical" "dialog-error"
+        send_notification "Internet Quota" "Internet access blocked until midnight" "critical" "dialog-error"
         block_internet
     fi
 }
 
-# Réinitialisation du quota (mode reset)
+# Reset quota (reset mode)
 reset_quota() {
     local DATE=$(date +%Y-%m-%d)
     local LOG_FILE="$QUOTA_SESSION_DIR/$CHILD_USERNAME.log"
     echo "$DATE 0" > "$LOG_FILE"
     delete_block
     generate_whitelist
-    send_notification "Quota Internet" "Votre quota Internet a été réinitialisé" "normal" "clock"
+    send_notification "Internet Quota" "Your Internet quota has been reset" "normal" "clock"
 }
 
-# Initialisation des chaînes iptables
+# Initialize iptables chains
 init_iptables() {
     iptables -N QUOTA_TIME 2>/dev/null || true
     iptables -F QUOTA_TIME

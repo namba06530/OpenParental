@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Fonctions utilitaires communes
+# Common utility functions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -18,28 +18,28 @@ error() {
     exit 1
 }
 
-# Vérification de la présence du .env
+# Check for .env file presence
 if [ ! -f ".env" ]; then
-    error "Fichier .env non trouvé dans le dossier courant."
+    error ".env file not found in current directory."
 fi
 source .env
 
-# Vérification des privilèges sudo
+# Check for sudo privileges
 if [ "$EUID" -ne 0 ]; then
-    error "Ce script doit être exécuté avec les privilèges sudo"
+    error "This script must be run with sudo privileges"
 fi
 
-# Installation des dépendances nécessaires (déja fait au début du pipeline dans le script 00-install.sh)
+# Dependencies installation (already done at the beginning of pipeline in script 00-install.sh)
 # install_dependencies() {
-    # log "Installation des dépendances nécessaires (iptables, sqlite3, iproute2, libnotify-bin)"
-    # apt install -y iptables sqlite3 iproute2 libnotify-bin || error "Échec de l'installation des dépendances"
+    # log "Installing required dependencies (iptables, sqlite3, iproute2, libnotify-bin)"
+    # apt install -y iptables sqlite3 iproute2 libnotify-bin || error "Failed to install dependencies"
 # }
 
-# Génération d'un .env minimal pour internet-quota.sh
+# Generate minimal .env for internet-quota.sh
 create_minimal_env() {
-    log "Génération d'un .env minimal pour internet-quota.sh (seules les variables nécessaires seront copiées)"
+    log "Generating minimal .env for internet-quota.sh (only necessary variables will be copied)"
     local minimal_env="/usr/local/bin/.env.quota"
-    # Liste des variables nécessaires
+    # List of required variables
     local vars=(
         QUOTA_DAILY_MINUTES
         QUOTA_START_TIME
@@ -57,18 +57,18 @@ create_minimal_env() {
     chmod 600 "$minimal_env"
 }
 
-# Copie du script de gestion du quota et du .env
+# Copy quota management script and .env
 install_quota_script() {
-    log "Copie du script deploy/internet-quota.sh vers /usr/local/bin/internet-quota.sh (à faire sur la machine enfant)"
+    log "Copying deploy/internet-quota.sh to /usr/local/bin/internet-quota.sh (to be done on child machine)"
     cp "$(dirname "$0")/deploy/internet-quota.sh" /usr/local/bin/internet-quota.sh
     chmod +x /usr/local/bin/internet-quota.sh
     create_minimal_env
 }
 
-# Création des services systemd
+# Create systemd services
 create_systemd_services() {
-    log "Création des services systemd pour le suivi et la réinitialisation du quota"
-    # Service de suivi (track)
+    log "Creating systemd services for quota tracking and reset"
+    # Tracking service
     cat > /etc/systemd/system/internet-quota-track.service << EOF
 [Unit]
 Description=Internet Time Quota Tracking
@@ -78,7 +78,7 @@ After=network.target
 Type=oneshot
 ExecStart=/usr/local/bin/internet-quota.sh track
 EOF
-    # Timer pour le suivi (toutes les minutes)
+    # Timer for tracking (every minute)
     cat > /etc/systemd/system/internet-quota-track.timer << EOF
 [Unit]
 Description=Run Internet Time Quota Tracking Every Minute
@@ -91,7 +91,7 @@ Unit=internet-quota-track.service
 [Install]
 WantedBy=timers.target
 EOF
-    # Service de reset
+    # Reset service
     cat > /etc/systemd/system/internet-quota-reset.service << EOF
 [Unit]
 Description=Reset Internet Time Quota
@@ -101,7 +101,7 @@ After=network.target
 Type=oneshot
 ExecStart=/usr/local/bin/internet-quota.sh reset
 EOF
-    # Timer de reset (tous les jours à l'heure définie)
+    # Reset timer (daily at defined time)
     cat > /etc/systemd/system/internet-quota-reset.timer << EOF
 [Unit]
 Description=Reset Internet Time Quota Daily
@@ -118,16 +118,16 @@ EOF
     systemctl enable internet-quota-reset.timer
     systemctl start internet-quota-track.timer
     systemctl start internet-quota-reset.timer
-    log "Services systemd créés et activés."
+    log "Systemd services created and activated."
 }
 
 main() {
-    log "Début de la configuration du quota Internet (mode simplifié)"
+    log "Starting Internet quota configuration (simplified mode)"
     # install_dependencies
     install_quota_script
     create_systemd_services
-    log "Configuration terminée."
-    echo -e "\n${YELLOW}IMPORTANT :\n- Le script /usr/local/bin/internet-quota.sh doit être déployé sur chaque machine enfant.\n- Le fichier .env doit être présent dans le même dossier que le script sur la machine enfant.\n- Les services systemd sont créés pour automatiser le suivi et la réinitialisation du quota.\n- Pour toute modification, éditez le script ou le .env puis relancez ce script.\n${NC}"
+    log "Configuration completed."
+    echo -e "\n${YELLOW}IMPORTANT:\n- The script /usr/local/bin/internet-quota.sh must be deployed on each child machine.\n- The .env file must be present in the same directory as the script on the child machine.\n- Systemd services are created to automate quota tracking and reset.\n- For any modifications, edit the script or .env then run this script again.\n${NC}"
 }
 
 main
