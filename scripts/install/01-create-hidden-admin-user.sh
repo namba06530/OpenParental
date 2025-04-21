@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Get the project root directory (where .env should be)
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 # Common utility functions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -19,11 +22,20 @@ error() {
     exit 1
 }
 
+section() {
+    echo -e "\n${BLUE}========== $1 ==========${NC}\n"
+}
+
 # Check for .env file presence
-if [ ! -f ".env" ]; then
-    error ".env file not found in the current directory."
+if [ ! -f "$PROJECT_ROOT/.env" ]; then
+    echo "Error: .env file not found in the project root directory ($PROJECT_ROOT)"
+    echo "Please copy .env.example to .env and configure it:"
+    echo "  cp .env.example .env"
+    exit 1
 fi
-source .env
+
+# Source .env file
+source "$PROJECT_ROOT/.env"
 
 # Check for sudo privileges
 if [ "$EUID" -ne 0 ]; then
@@ -45,14 +57,17 @@ check_child_account() {
 
 # Securely save admin password in .env
 save_admin_password() {
-    local password=$1
-    local env_file=".env"
+    local password="$1"
     local temp_file=$(mktemp)
+    local env_file="$PROJECT_ROOT/.env"
+
     # Create a temporary copy of .env without ADMIN_PASSWORD line
     grep -v "^ADMIN_PASSWORD=" "$env_file" > "$temp_file"
+    
     # Add the new password
-    echo "ADMIN_PASSWORD='$password'" >> "$temp_file"
-    # Replace the old file
+    echo "ADMIN_PASSWORD=\"$password\"" >> "$temp_file"
+    
+    # Replace the original file
     mv "$temp_file" "$env_file"
     chmod 600 "$env_file"
 }
@@ -101,6 +116,7 @@ EOF
 
 # Main execution
 main() {
+    section "Installation and Configuration of User Accounts"
     log "Starting user configuration"
     check_child_account
     create_admin_user

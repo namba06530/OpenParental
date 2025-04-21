@@ -1,0 +1,12 @@
+[Unit]
+Description=Reset Internet Quota Daily
+Documentation=https://github.com/openparental/internet-quota
+Requires=internet-quota-reset.service
+
+[Timer]
+OnCalendar=*-*-* 00:00:00
+Persistent=true
+Unit=internet-quota-reset.service
+
+[Install]
+WantedBy=timers.target 

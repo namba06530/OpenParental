@@ -1,0 +1,19 @@
+FROM jrei/systemd-ubuntu:22.04
+
+# Installation des dépendances
+RUN apt-get update && apt-get install -y \
+    iptables \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+# Création de l'utilisateur enfant
+RUN useradd -m -s /bin/bash child && \
+    echo "child:password" | chpasswd && \
+    usermod -aG sudo child
+
+# Préparation des répertoires
+RUN mkdir -p /var/lib/openparental/quota /var/log/openparental/quota /usr/local/bin
+RUN touch /tmp/quota-debug.log && chmod 666 /tmp/quota-debug.log
+
+# Commande par défaut
+CMD ["/lib/systemd/systemd"] 

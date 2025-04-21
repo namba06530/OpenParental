@@ -1,6 +1,20 @@
 #!/bin/bash
 set -euo pipefail
 
+# Get the project root directory (where .env should be)
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+# Check for .env file presence
+if [ ! -f "$PROJECT_ROOT/.env" ]; then
+    echo "Error: .env file not found in the project root directory ($PROJECT_ROOT)"
+    echo "Please copy .env.example to .env and configure it:"
+    echo "  cp .env.example .env"
+    exit 1
+fi
+
+# Source .env file
+source "$PROJECT_ROOT/.env"
+
 # Common utility functions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -19,11 +33,9 @@ error() {
     exit 1
 }
 
-# Check for .env file presence
-if [ ! -f ".env" ]; then
-    error ".env file not found in the current directory."
-fi
-source .env
+section() {
+    echo -e "\n${BLUE}========== $1 ==========${NC}\n"
+}
 
 # Check for sudo privileges
 if [ "$EUID" -ne 0 ]; then
@@ -32,11 +44,17 @@ fi
 
 # Save SSH key in .env
 save_ssh_key() {
-    local key=$1
-    local env_file=".env"
+    local key="$1"
     local temp_file=$(mktemp)
+    local env_file="$PROJECT_ROOT/.env"
+
+    # Remove existing SSH_PUBLIC_KEY line
     grep -v "^SSH_PUBLIC_KEY=" "$env_file" > "$temp_file"
-    echo "SSH_PUBLIC_KEY='$key'" >> "$temp_file"
+    
+    # Add the new key
+    echo "SSH_PUBLIC_KEY=\"$key\"" >> "$temp_file"
+    
+    # Replace the original file
     mv "$temp_file" "$env_file"
     chmod 600 "$env_file"
 }
@@ -125,6 +143,7 @@ verify_ssh() {
 
 # Main execution
 main() {
+    section "Installation and Configuration of SSH"
     log "Starting SSH configuration"
     install_ssh_server
     setup_ssh_directory

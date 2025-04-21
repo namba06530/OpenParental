@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# 00-install.sh: Main installation script for OpenParental
+# To be executed as root
+
 # Common utility functions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -23,64 +26,103 @@ section() {
     echo -e "\n${BLUE}========== $1 ==========${NC}\n"
 }
 
+# Get the project root directory (where .env should be)
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Check for .env file presence
-if [ ! -f ".env" ]; then
-    error ".env file not found in the current directory."
+if [ ! -f "$PROJECT_ROOT/.env" ]; then
+    echo "Error: .env file not found in the project root directory ($PROJECT_ROOT)"
+    echo "Please copy .env.example to .env and configure it:"
+    echo "  cp .env.example .env"
+    exit 1
 fi
-source .env
+
+# Source .env file
+source "$PROJECT_ROOT/.env"
 
 # Check for sudo privileges
 if [ "$EUID" -ne 0 ]; then
-    error "This script must be run with sudo privileges."
+    error "This script must be run with sudo privileges"
 fi
 
-# Check working directory
-if [ ! -f "00-install.sh" ]; then
-    error "This script must be run from the ct_parent directory."
-fi
-
-# System prerequisites check
-check_prerequisites() {
-    section "Checking prerequisites..."
-    # Check distribution
-    if ! grep -q "Ubuntu" /etc/os-release; then
-        error "This script requires Ubuntu."
-    fi
-    # Check required packages
-    local required_packages=(
-        "iptables"
-        "sqlite3"
-        "curl"
-        "iproute2"
-        "libnotify-bin"
-    )
-    local missing_packages=()
-    for package in "${required_packages[@]}"; do
-        if ! dpkg -l | grep -q "^ii  $package "; then
-            missing_packages+=("$package")
+# Verify dependencies
+verify_dependencies() {
+    local deps=("apt" "systemctl" "iptables" "notify-send")
+    local missing=()
+    
+    for dep in "${deps[@]}"; do
+        if ! command -v "$dep" >/dev/null 2>&1; then
+            missing+=("$dep")
         fi
     done
-    if [ ${#missing_packages[@]} -ne 0 ]; then
-        log "Installing missing packages: ${missing_packages[*]}"
-        apt update -qq
-        apt install -qq -y "${missing_packages[@]}" || error "Unable to install required packages."
+    
+    if [ ${#missing[@]} -ne 0 ]; then
+        error "Missing required dependencies: ${missing[*]}"
     fi
-    log "All prerequisites are satisfied."
 }
 
-# Run a script
-run_script() {
-    local script=$1
-    local name=$2
-    section "$name"
-    if [ ! -f "$script" ]; then
-        error "Script not found: $script"
+# Verify directories
+verify_directories() {
+    local dirs=(
+        "/var/log/openparental"
+        "/var/lib/openparental"
+        "/usr/local/bin/lib"
+    )
+    
+    for dir in "${dirs[@]}"; do
+        if [ ! -d "$dir" ]; then
+            mkdir -p "$dir"
+            chmod 700 "$dir"
+            log "Created directory: $dir"
+        fi
+    done
+}
+
+# Install dependencies
+install_dependencies() {
+    log "Installing required dependencies"
+    apt update
+    apt install -y iptables sqlite3 iproute2 libnotify-bin curl || error "Failed to install dependencies"
+}
+
+# Copy source files
+copy_source_files() {
+    log "Copying source files"
+    cp -r "$PROJECT_ROOT/src/"* /usr/local/bin/
+    chmod 755 /usr/local/bin/internet-quota.sh
+    chmod 600 /usr/local/bin/lib/*.sh
+}
+
+# Execute installation scripts in order
+execute_scripts() {
+    local scripts=(
+        "01-create-hidden-admin-user.sh"
+        "02-install-and-configure-ssh.sh"
+        "03-force-custom-dns.sh"
+        "04-install-and-configure-hblock.sh"
+        "05-install-and-configure-Timekpr.sh"
+        "06-set-internet-quota.sh"
+    )
+    
+    for script in "${scripts[@]}"; do
+        echo -e "\n${BLUE}=================================================${NC}"
+        echo -e "${BLUE}           Executing $script${NC}"
+        echo -e "${BLUE}=================================================${NC}\n"
+        if ! bash "$PROJECT_ROOT/scripts/install/$script"; then
+            error "Failed to execute $script"
+        fi
+    done
+}
+
+# Final security phase
+final_security() {
+    echo -e "\n${BLUE}=================================================${NC}"
+    echo -e "${BLUE}           Final Security Phase${NC}"
+    echo -e "${BLUE}=================================================${NC}\n"
+    log "Starting final security phase"
+    if ! bash "$PROJECT_ROOT/scripts/install/99-final-script.sh"; then
+        error "Failed to execute final security script"
     fi
-    chmod +x "$script"
-    if ! bash "$script"; then
-        error "Failed to execute $script"
-    fi
-    log "$name completed successfully."
 }
 
 # Main execution
@@ -94,41 +136,27 @@ main() {
     echo    "==============================================================="
     echo -e "${NC}\n"
     sleep 1
-    # 1. Set timezone (interactive)
-    # section "Timezone configuration (tzdata)"
-    sleep 1
-    # dpkg-reconfigure tzdata
-    # 2. System update
+
+    # System update
     section "System update..."
     apt update -qq
     apt upgrade -qq -y
     echo
-    # 3. Install antivirus (ClamAV)
+
+    # Install antivirus (ClamAV)
     section "ClamAV antivirus installation..."
     apt install -qq -y clamav clamav-daemon
     systemctl enable clamav-freshclam && systemctl start clamav-freshclam
     echo
-    # Source .env file
-    source .env
+
     # Prerequisites check
-    check_prerequisites
-    echo
-    # Run scripts in order
-    scripts=(
-        "01-create-hidden-admin-user.sh:Admin account creation..."
-        "02-install-and-configure-ssh.sh:SSH installation and configuration..."
-        "03-force-custom-dns.sh:Secure DNS configuration..."
-        "04-install-and-configure-hblock.sh:hBlock installation and configuration..."
-        "05-install-and-configure-Timekpr.sh:Timekpr installation and configuration..."
-        "06-set-internet-quota.sh:Internet quota configuration..."
-        "99-final-script.sh:Final hardening..."
-    )
-    for entry in "${scripts[@]}"; do
-        script="${entry%%:*}"
-        name="${entry#*:}"
-        run_script "$script" "$name"
-        sleep 1
-    done
+    verify_dependencies
+    verify_directories
+    install_dependencies
+    copy_source_files
+    execute_scripts
+    final_security
+
     section "Installation complete"
     echo -e "${GREEN}OpenParental v0.1 installation completed successfully!${NC}\n"
     log "Admin user: $ADMIN_USERNAME"
@@ -143,4 +171,4 @@ set -e
 trap 'error "An error occurred during installation"' ERR
 
 # Script entry point
-main
+main 

@@ -13,17 +13,18 @@ A complete **open source** parental control solution for Ubuntu, designed to be 
 ## 📁 Project Structure
 
 ```
-ct_parent/
-├── 00-install.sh                         # Orchestrates the complete installation
-├── 01-create-hidden-admin-user.sh        # Creates the admin account
-├── 02-install-and-configure-ssh.sh       # Configures SSH access
-├── 03-force-custom-dns.sh                # Secure DNS configuration
-├── 04-install-and-configure-hblock.sh    # Web filtering installation
-├── 05-install-and-configure-Timekpr.sh   # Screen time control
-├── 06-set-internet-quota.sh              # Internet quota management (install/config)
-├── deploy/
-│   └── internet-quota.sh                 # Script to deploy on child machines for Internet quota
-└── README.fr.md                          # French documentation
+OpenParental/
+├── src/                                # Source code
+│   ├── internet-quota.sh              # Main quota management script
+│   └── lib/
+│       └── logging.sh                 # Logging library
+├── tests/                             # Test suite
+│   ├── test-logging.sh               # Logging tests
+│   └── test-iptables.sh              # Iptables tests
+├── docs/                              # Documentation
+│   ├── README.md                     # English documentation
+│   └── README.fr.md                  # French documentation
+└── ...
 ```
 
 ## 🎯 Project Goals
@@ -66,12 +67,19 @@ ct_parent/
 - Usage monitoring
 - Dedicated script to deploy on each child machine
 
+### 7. Logging System
+- Comprehensive logging with multiple levels (DEBUG, INFO, WARN, ERROR, SECURITY)
+- Automatic log rotation and cleanup
+- Detailed tracking of system events and user actions
+- Secure storage of logs with proper permissions
+
 ## 📋 Prerequisites
 
 - Ubuntu (recommended version: 22.04 LTS or higher)
 - A user account with sudo rights for initial installation
 - NetworkManager
 - Internet connection to install components
+- iptables for network filtering
 
 ## 🚀 Standard Installation (family, school, association...)
 
@@ -107,8 +115,9 @@ If you want to deploy **only the Internet quota management** on an existing mach
 - [x] Installation scripts (account creation, filtering, quotas, etc.)
 - [x] Unified installation script (00-install.sh, single entry point)
 - [x] Internet Quota feature (Internet quota management)
+- [x] Logging system implementation
+- [x] Automated testing framework
 - [ ] Separation of Internet time and screen time (priority)
-- [ ] Implementation of detailed logs so parents can view Internet time counter
 - [ ] Improved multi-user management for Internet quota and screen time
 - [ ] Graphical administration interface
 - [ ] Reporting and statistics system
@@ -126,6 +135,8 @@ If you want to deploy **only the Internet quota management** on an existing mach
 - No data sent outside the machine by default.
 - Logs and quotas remain local.
 - Parents remain responsible for supervision.
+- Encrypted storage of sensitive data.
+- Regular security audits and updates.
 
 ## 📚 Detailed Documentation
 
@@ -152,11 +163,20 @@ Timekpr-nExT allows:
 - Managing multiple user accounts
 
 ### Internet Quota
-The `deploy/internet-quota.sh` script manages:
+The `src/internet-quota.sh` script manages:
 - Limiting connection time
 - Usage tracking
 - Custom quota rules
 - Notifications and whitelist management
+- Simple and efficient logging of usage data
+
+### Logging System
+The `src/lib/logging.sh` library provides:
+- Multiple log levels (DEBUG, INFO, WARN, ERROR, SECURITY)
+- Automatic log rotation
+- Secure storage of logs
+- Detailed event tracking
+- Performance monitoring
 
 ### Filtering with hBlock
 hBlock allows:
@@ -199,3 +219,46 @@ This project is provided "as is", without warranty. It aims to help families bet
 ---
 
 > _Made with ❤️ by the open source community. Join us to improve digital safety for families!_
+
+## Tests
+
+The project includes several test suites to ensure system quality and reliability:
+
+### Logging Tests
+
+The logging tests are organized into three distinct categories:
+
+1. **Logging Infrastructure Tests** (`test-logging.sh`)
+   - Verifies basic logging system functionality
+   - Tests log file creation, rotation, and cleanup
+   - Ensures logging infrastructure works correctly
+
+2. **Error Handling Tests** (`test-error-handling-module.sh`)
+   - Verifies error formatting and handling
+   - Tests integration between logging system and error handling
+   - Ensures error messages are properly formatted and recorded
+
+3. **Log Usage Tests**
+   - Verifies log usage in specific contexts
+   - Tests log integration with other features
+   - Ensures logs are properly used across different modules
+
+All tests are executed in isolated Docker containers to ensure security and reproducibility.
+
+## 🔧 Internet Quota Module
+
+A modular internet quota system has been integrated into the project to allow precise control over users' Internet connection time. This system is designed to be:
+
+- **Modular**: Architecture based on separate modules for logging, security, configuration, and core functionalities
+- **Secure**: Data file protection, permission verification, and locking to prevent corruption
+- **Automated**: Systemd services for automatic tracking and resetting of quotas
+- **Easy to use**: Simple command-line interface with intuitive commands
+
+### Main commands
+
+- **Display current status**: `internet-quota status`
+- **Increment quota**: `internet-quota increment [minutes]`
+- **Reset quota**: `internet-quota reset`
+- **Configure the system**: `internet-quota config [key=value]`
+
+The quota system helps parents enforce Internet time limits while maintaining flexibility through configuration options like whitelists for educational websites.

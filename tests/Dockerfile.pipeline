@@ -1,0 +1,55 @@
+FROM ubuntu:22.04
+
+# Install basic dependencies with update but without upgrade
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    sudo \
+    bash \
+    iptables \
+    openssh-server \
+    curl \
+    wget \
+    libnotify-bin \
+    network-manager \
+    perl \
+    software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user
+RUN useradd -m -s /bin/bash olivier && \
+    echo "olivier:olivier" | chpasswd && \
+    usermod -aG sudo olivier && \
+    echo "olivier ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+# Create project directory
+WORKDIR /app
+
+# Copy all project files
+COPY . /app/
+
+# Copy .env file and create necessary directories/files
+RUN cp /app/.env.example /app/.env && \
+    cp /app/.env /app/scripts/.env && \
+    cp /app/.env /app/scripts/install/.env && \
+    mkdir -p /app/src/lib && \
+    touch /app/src/lib/common.sh && \
+    mkdir -p /var/log/openparental/quota && \
+    mkdir -p /var/lib/openparental/quota && \
+    mkdir -p /usr/local/bin/lib && \
+    mkdir -p /var/lib/AccountsService && \
+    mkdir -p /run/dbus && \
+    touch /run/dbus/system_bus_socket && \
+    chown -R olivier:olivier /app /var/log/openparental /var/lib/openparental /usr/local/bin/lib /var/lib/AccountsService /run/dbus
+
+# Set permissions
+RUN chown -R olivier:olivier /app
+
+# Switch to non-root user
+USER olivier
+
+# Create a script to run the pipeline
+COPY tests/run_pipeline.sh /app/run_pipeline.sh
+RUN chmod +x /app/run_pipeline.sh
+
+# Command to run the pipeline
+CMD ["/app/run_pipeline.sh"] 

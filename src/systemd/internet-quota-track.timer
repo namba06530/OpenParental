@@ -1,0 +1,12 @@
+[Unit]
+Description=Track Internet Usage Every Minute
+Documentation=https://github.com/openparental/internet-quota
+Requires=internet-quota-track.service
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+Unit=internet-quota-track.service
+
+[Install]
+WantedBy=timers.target 

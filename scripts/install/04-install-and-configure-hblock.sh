@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Get the project root directory (where .env should be)
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 # Common utility functions
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -19,11 +22,20 @@ error() {
     exit 1
 }
 
+section() {
+    echo -e "\n${BLUE}========== $1 ==========${NC}\n"
+}
+
 # Check for .env file presence
-if [ ! -f ".env" ]; then
-    error ".env file not found in the current directory."
+if [ ! -f "$PROJECT_ROOT/.env" ]; then
+    echo "Error: .env file not found in the project root directory ($PROJECT_ROOT)"
+    echo "Please copy .env.example to .env and configure it:"
+    echo "  cp .env.example .env"
+    exit 1
 fi
-source .env
+
+# Source .env file
+source "$PROJECT_ROOT/.env"
 
 # Check for sudo privileges
 if [ "$EUID" -ne 0 ]; then
@@ -34,9 +46,10 @@ fi
 check_dependencies() {
     log "Checking dependencies"
     
-    for cmd in curl shasum systemctl; do
+    for cmd in shasum systemctl; do
         if ! command -v "$cmd" >/dev/null 2>&1; then
-            error "Required command not found: $cmd"
+            log "Installing $cmd..."
+            apt-get update -qq && apt-get install -qq -y "$cmd" || error "Failed to install $cmd"
         fi
     done
 }
@@ -163,6 +176,7 @@ show_status() {
 
 # Main execution
 main() {
+    section "Installation and Configuration of hBlock"
     log "Starting hBlock installation"
     check_dependencies
     install_hblock

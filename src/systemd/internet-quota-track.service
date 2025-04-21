@@ -1,0 +1,16 @@
+[Unit]
+Description=Track Internet Usage
+Documentation=https://github.com/openparental/internet-quota
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/internet-quota increment 1
+User=root
+Group=root
+Nice=19
+IOSchedulingClass=idle
+IOSchedulingPriority=7
+
+[Install]
+WantedBy=multi-user.target 

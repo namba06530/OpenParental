@@ -1,0 +1,50 @@
+FROM ubuntu:22.04
+
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    iptables \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create child user
+RUN useradd -m -s /bin/bash child && \
+    mkdir -p /home/child/.gnupg && \
+    chown -R child:child /home/child/.gnupg && \
+    chmod 700 /home/child/.gnupg && \
+    echo "child ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+# Create log directory with proper permissions
+RUN mkdir -p /var/log/openparental/quota && \
+    chown -R child:child /var/log/openparental/quota && \
+    chmod 755 /var/log/openparental/quota && \
+    touch /var/log/openparental/quota/errors.log && \
+    touch /var/log/openparental/quota/debug.log && \
+    chown child:child /var/log/openparental/quota/*.log && \
+    chmod 644 /var/log/openparental/quota/*.log
+
+# Create quota session directory
+RUN mkdir -p /var/lib/openparental/quota && \
+    chown -R child:child /var/lib/openparental/quota && \
+    chmod 700 /var/lib/openparental/quota
+
+# Set up application directories
+RUN mkdir -p /usr/local/bin && \
+    touch /tmp/quota-debug.log && \
+    chmod 666 /tmp/quota-debug.log
+
+# Set working directory
+WORKDIR /app
+
+# Copy project files
+COPY . /app/
+
+# Copy test-specific version of internet-quota.sh to /usr/local/bin/
+# and make it executable
+RUN cp /app/tests/internet-quota-test.sh /usr/local/bin/internet-quota.sh && \
+    chmod +x /usr/local/bin/internet-quota.sh
+
+# Make test scripts executable
+RUN chmod +x /app/tests/*.sh
+
+# Default command to run the simplified test
+CMD ["bash", "/app/tests/test-simple-quota.sh"] 
