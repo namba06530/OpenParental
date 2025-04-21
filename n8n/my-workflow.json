@@ -25,7 +25,7 @@
             "string": [
               {
                 "value1": "={{$json[\"ref\"]}}",
-                "operation": "equals",
+                "operation": "Equal",
                 "value2": "refs/heads/feature/internet-quota-rework"
               }
             ]
