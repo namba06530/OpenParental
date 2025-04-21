@@ -19,7 +19,7 @@
 - [x] Tests unitaires de base sur les fonctionnalités principales
 - [x] Intégration avec systemd pour l'automatisation
 
-## 🔄 Phase 4 : Modularisation (EN COURS)
+## 🔄 Phase 4 : Modularisation (EN COURS DE REALISATION)
 - [ ] Refactorisation du code en modules indépendants :
   - [ ] quota-core.sh : Fonctions de base de gestion des quotas
   - [ ] quota-security.sh : Protection des données et vérification
