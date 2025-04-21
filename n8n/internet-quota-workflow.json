@@ -1,88 +1,76 @@
 {
-    "name": "Agent Dev - Analyse TODO.md",
-    "nodes": [
-      {
-        "parameters": {
-          "owner": {
-            "__rl": true,
-            "value": "namba06530",
-            "mode": "name"
-          },
-          "repository": {
-            "__rl": true,
-            "value": "OpenParental",
-            "mode": "name"
-          },
-          "events": [
-            "push"
-          ],
-          "options": {
-            "insecureSSL": false
-          }
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "owner": {
+          "__rl": true,
+          "value": "namba06530",
+          "mode": "name"
         },
-        "type": "n8n-nodes-base.githubTrigger",
-        "typeVersion": 1,
-        "position": [
-          0,
-          0
+        "repository": {
+          "__rl": true,
+          "value": "OpenParental",
+          "mode": "name"
+        },
+        "events": [
+          "push"
         ],
-        "id": "395f022f-6b48-43b5-bcf0-0539183bb602",
-        "name": "Github Trigger",
-        "webhookId": "a48e2f07-088f-47f8-8734-2b3a6716287d",
-        "credentials": {
-          "githubApi": {
-            "id": "aKK8n3of97udUsCi",
-            "name": "GitHub account"
-          }
+        "options": {
+          "insecureSSL": false
         }
       },
-      {
-        "parameters": {
-          "owner": "namba06530",
-          "repository": "OpenParental",
-          "branch": "feature/internet-quota-rework",
-          "filePath": "docs/TODO.md"
-        },
-        "id": "get-todo-node",
-        "name": "Get TODO.md",
-        "type": "n8n-nodes-base.github",
-        "typeVersion": 1,
-        "position": [
-          300,
-          0
-        ],
-        "credentials": {
-          "githubApi": {
-            "id": "aKK8n3of97udUsCi",
-            "name": "GitHub account"
-          }
+      "type": "n8n-nodes-base.githubTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "626f9aaf-8b7c-474f-8ede-0c359e55c1f0",
+      "name": "Github Trigger",
+      "webhookId": "a48e2f07-088f-47f8-8734-2b3a6716287d",
+      "credentials": {
+        "githubApi": {
+          "id": "aKK8n3of97udUsCi",
+          "name": "GitHub account"
         }
       }
-    ],
-    "connections": {
-      "395f022f-6b48-43b5-bcf0-0539183bb602": {
-        "main": [
-          [
-            {
-              "node": "get-todo-node",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
+    },
+    {
+      "parameters": {
+        "owner": "namba06530",
+        "repository": "OpenParental",
+        "title": "test",
+        "labels": [],
+        "assignees": []
+      },
+      "id": "46af1495-4c21-45a3-834f-a20378fccb81",
+      "name": "Get TODO.md",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1,
+      "position": [
+        300,
+        0
+      ],
+      "webhookId": "fd598390-df60-40ee-b1e5-87f37a83d02d",
+      "credentials": {
+        "githubApi": {
+          "id": "aKK8n3of97udUsCi",
+          "name": "GitHub account"
+        }
       }
-    },
-    "pinData": {},
-    "active": false,
-    "settings": {
-      "executionOrder": "v1"
-    },
-    "versionId": "ff26c2bf-d178-4df0-ac7c-f4a7460e04e7",
-    "meta": {
-      "templateCredsSetupCompleted": true,
-      "instanceId": "064af51ef9374fb22b6a6319a2dc9b6cb1591d4049db75e7ad4ceaece874f99d"
-    },
-    "id": "L3YBZewWwAMgxpZZ",
-    "tags": []
-  }
-  
+    }
+  ],
+  "pinData": {},
+  "connections": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "10e07d17-fb7c-4eb6-ad2f-2c74fd44dfb6",
+  "meta": {
+    "instanceId": "064af51ef9374fb22b6a6319a2dc9b6cb1591d4049db75e7ad4ceaece874f99d"
+  },
+  "id": "LHhXGh0Hak0VfVak",
+  "tags": []
+}
