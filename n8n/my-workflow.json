@@ -1,17 +1,24 @@
 {
-    "name": "Déclencheur branche spécifique",
+    "name": "My workflow",
     "nodes": [
       {
         "parameters": {
           "owner": "namba06530",
           "repository": "OpenParental",
-          "events": ["push"],
+          "events": [
+            "push"
+          ],
           "options": {}
         },
         "type": "n8n-nodes-base.githubTrigger",
         "typeVersion": 1,
-        "position": [0, 0],
+        "position": [
+          0,
+          0
+        ],
         "name": "GitHub Trigger",
+        "id": "d59cc07b-3c00-45b2-b0cb-c6255f76768e",
+        "webhookId": "cf9086c3-a5e1-4035-a5dc-1fced411933f",
         "credentials": {
           "githubApi": {
             "id": "aKK8n3of97udUsCi",
@@ -25,7 +32,6 @@
             "string": [
               {
                 "value1": "={{$json[\"ref\"]}}",
-                "operation": "Equal",
                 "value2": "refs/heads/feature/internet-quota-rework"
               }
             ]
@@ -33,10 +39,50 @@
         },
         "type": "n8n-nodes-base.if",
         "typeVersion": 1,
-        "position": [300, 0],
-        "name": "IF branche"
+        "position": [
+          300,
+          0
+        ],
+        "name": "IF branche",
+        "id": "beffb77e-1d32-48c0-8523-6c1e8ba30152"
+      },
+      {
+        "parameters": {
+          "resource": "file",
+          "operation": "get",
+          "owner": {
+            "__rl": true,
+            "value": "namba06530",
+            "mode": "name"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "https://github.com/namba06530/OpenParental/tree/feature/internet-quota-rework",
+            "mode": "url"
+          },
+          "filePath": "docs/plan-action.md",
+          "additionalParameters": {
+            "reference": ""
+          }
+        },
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          520,
+          -100
+        ],
+        "id": "0a2b2c10-490f-4274-a4bc-854f45e652a7",
+        "name": "GitHub",
+        "webhookId": "9d4fda2f-ccb0-4b2b-9750-63999ad7c459",
+        "credentials": {
+          "githubApi": {
+            "id": "aKK8n3of97udUsCi",
+            "name": "GitHub account"
+          }
+        }
       }
     ],
+    "pinData": {},
     "connections": {
       "GitHub Trigger": {
         "main": [
@@ -48,7 +94,28 @@
             }
           ]
         ]
+      },
+      "IF branche": {
+        "main": [
+          [
+            {
+              "node": "GitHub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
       }
-    }
+    },
+    "active": true,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "8b7edabf-2ac7-45e7-b93e-de2f0c607458",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "064af51ef9374fb22b6a6319a2dc9b6cb1591d4049db75e7ad4ceaece874f99d"
+    },
+    "id": "JnlILGdpHA7MkNin",
+    "tags": []
   }
-  
