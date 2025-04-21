@@ -63,8 +63,9 @@
             "cachedResultUrl": "https://github.com/namba06530/OpenParental"
           },
           "filePath": "docs/plan-action.md",
+          "asBinaryProperty": false,
           "additionalParameters": {
-            "reference": ""
+            "reference": "feature/internet-quota-rework"
           }
         },
         "type": "n8n-nodes-base.github",
@@ -113,7 +114,7 @@
     "settings": {
       "executionOrder": "v1"
     },
-    "versionId": "4fe090ee-bfdb-4b91-b5f5-d3ae1cd52dc4",
+    "versionId": "22a6b087-fb7d-4cf9-a2c2-db63dbc2416c",
     "meta": {
       "templateCredsSetupCompleted": true,
       "instanceId": "064af51ef9374fb22b6a6319a2dc9b6cb1591d4049db75e7ad4ceaece874f99d"
