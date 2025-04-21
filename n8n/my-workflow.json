@@ -32,7 +32,7 @@
             "string": [
               {
                 "value1": "={{$json[\"ref\"]}}",
-                "value2": "refs/heads/feature/internet-quota-rework"
+                "value2": "feature/internet-quota-rework"
               }
             ]
           }
