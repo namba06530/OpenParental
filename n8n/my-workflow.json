@@ -57,8 +57,10 @@
           },
           "repository": {
             "__rl": true,
-            "value": "https://github.com/namba06530/OpenParental/tree/feature/internet-quota-rework",
-            "mode": "url"
+            "value": "OpenParental",
+            "mode": "list",
+            "cachedResultName": "OpenParental",
+            "cachedResultUrl": "https://github.com/namba06530/OpenParental"
           },
           "filePath": "docs/plan-action.md",
           "additionalParameters": {
@@ -111,7 +113,7 @@
     "settings": {
       "executionOrder": "v1"
     },
-    "versionId": "8b7edabf-2ac7-45e7-b93e-de2f0c607458",
+    "versionId": "4fe090ee-bfdb-4b91-b5f5-d3ae1cd52dc4",
     "meta": {
       "templateCredsSetupCompleted": true,
       "instanceId": "064af51ef9374fb22b6a6319a2dc9b6cb1591d4049db75e7ad4ceaece874f99d"
