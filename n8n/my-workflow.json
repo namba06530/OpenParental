@@ -1,0 +1,54 @@
+{
+    "name": "Déclencheur branche spécifique",
+    "nodes": [
+      {
+        "parameters": {
+          "owner": "namba06530",
+          "repository": "OpenParental",
+          "events": ["push"],
+          "options": {}
+        },
+        "type": "n8n-nodes-base.githubTrigger",
+        "typeVersion": 1,
+        "position": [0, 0],
+        "name": "GitHub Trigger",
+        "credentials": {
+          "githubApi": {
+            "id": "aKK8n3of97udUsCi",
+            "name": "GitHub account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{$json[\"ref\"]}}",
+                "operation": "equals",
+                "value2": "refs/heads/feature/internet-quota-rework"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [300, 0],
+        "name": "IF branche"
+      }
+    ],
+    "connections": {
+      "GitHub Trigger": {
+        "main": [
+          [
+            {
+              "node": "IF branche",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+  
