@@ -13,7 +13,7 @@ These tools are specially designed to be used by an AI in an automation pipeline
 
 ## TODO.md File Format
 
-The `docs/TODO.md` file uses a specific format so that tasks can be easily extracted:
+The `docs/TODO.md` file uses a specific format so that tasks can be easily extracted: 
 
 ```
 ### [TASK-ID]: TITLE
