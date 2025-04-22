@@ -244,3 +244,102 @@ Les tests de journalisation sont organisés en trois catégories distinctes :
    - Assure que les logs sont correctement utilisés dans les différents modules
 
 Tous les tests sont exécutés dans des conteneurs Docker isolés pour garantir la sécurité et la reproductibilité.
+
+## 🔧 Module de Quota Internet
+
+Un système modulaire de gestion des quotas Internet a été intégré au projet pour permettre un contrôle précis du temps de connexion des utilisateurs. Ce système est conçu pour être :
+- **Modulaire** : Divisé en composants indépendants et réutilisables
+- **Sécurisé** : Construit avec une approche sécurité avant tout
+- **Fiable** : Gestion robuste des erreurs et journalisation
+- **Maintenable** : Séparation claire des responsabilités
+
+### Architecture Modulaire
+
+```
+src/modules/
+├── quota-core.sh      # Gestion des quotas
+├── quota-security.sh  # Sécurité et opérations fichiers
+├── quota-network.sh   # Règles réseau et pare-feu
+├── quota-config.sh    # Gestion de la configuration
+└── quota-logging.sh   # Système de journalisation
+```
+
+### Fonctionnalités Principales
+
+#### Module Core (quota-core.sh)
+- Suivi et gestion des quotas
+- Fonctions d'incrémentation et de réinitialisation
+- Rapports d'état
+- Gestion de la concurrence avec verrous
+
+#### Module Security (quota-security.sh)
+- Opérations sécurisées sur les fichiers
+- Gestion des permissions
+- Contrôle d'accès
+- Vérifications d'intégrité
+
+#### Module Network (quota-network.sh)
+- Gestion des règles iptables
+- Système de liste blanche
+- Contrôle réseau par utilisateur
+- Utilitaires de nettoyage
+
+#### Module Config (quota-config.sh)
+- Configuration centralisée
+- Validation des paramètres
+- Gestion des fichiers de configuration
+- Paramètres par défaut
+
+#### Module Logging (quota-logging.sh)
+- Journalisation multi-niveaux (DEBUG, INFO, WARN, ERROR)
+- Rotation et nettoyage des logs
+- Formatage standardisé des messages
+- Surveillance des performances
+
+### Exemples d'Utilisation
+
+1. **Vérifier le Quota Actuel**
+   ```bash
+   internet-quota status
+   ```
+
+2. **Augmenter le Temps d'Utilisation**
+   ```bash
+   internet-quota increment 30  # Ajouter 30 minutes
+   ```
+
+3. **Réinitialiser le Quota Journalier**
+   ```bash
+   internet-quota reset
+   ```
+
+4. **Configurer les Paramètres**
+   ```bash
+   internet-quota config quota=120  # Définir le quota journalier à 120 minutes
+   ```
+
+### Intégration
+
+Le système de quota s'intègre avec :
+- La journalisation système pour la surveillance
+- iptables pour le contrôle réseau
+- systemd pour l'automatisation
+- Le système de notification utilisateur
+
+### Fonctionnalités de Sécurité
+
+- Contrôle des permissions des fichiers
+- Isolation des processus
+- Stockage sécurisé de la configuration
+- Journalisation des activités
+- Protection des règles réseau
+
+### Améliorations Futures
+
+- Chiffrement des données
+- Détection avancée des contournements
+- Quotas par application
+- Interface web
+- Statistiques détaillées
+
+Pour plus de détails, consultez le fichier [TODO.md](docs/TODO.md).

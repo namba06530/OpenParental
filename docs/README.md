@@ -248,17 +248,98 @@ All tests are executed in isolated Docker containers to ensure security and repr
 ## 🔧 Internet Quota Module
 
 A modular internet quota system has been integrated into the project to allow precise control over users' Internet connection time. This system is designed to be:
+- **Modular**: Split into independent, reusable components
+- **Secure**: Built with security-first approach
+- **Reliable**: Robust error handling and logging
+- **Maintainable**: Clear separation of concerns
 
-- **Modular**: Architecture based on separate modules for logging, security, configuration, and core functionalities
-- **Secure**: Data file protection, permission verification, and locking to prevent corruption
-- **Automated**: Systemd services for automatic tracking and resetting of quotas
-- **Easy to use**: Simple command-line interface with intuitive commands
+### Module Architecture
 
-### Main commands
+```
+src/modules/
+├── quota-core.sh      # Core quota management
+├── quota-security.sh  # Security and file operations
+├── quota-network.sh   # Network and firewall rules
+├── quota-config.sh    # Configuration management
+└── quota-logging.sh   # Logging system
+```
 
-- **Display current status**: `internet-quota status`
-- **Increment quota**: `internet-quota increment [minutes]`
-- **Reset quota**: `internet-quota reset`
-- **Configure the system**: `internet-quota config [key=value]`
+### Key Features
 
-The quota system helps parents enforce Internet time limits while maintaining flexibility through configuration options like whitelists for educational websites.
+#### Core Module (quota-core.sh)
+- Quota tracking and management
+- Time increment and reset functions
+- Status reporting
+- Concurrency handling with locks
+
+#### Security Module (quota-security.sh)
+- Secure file operations
+- Permission management
+- Access control
+- File integrity checks
+
+#### Network Module (quota-network.sh)
+- iptables rule management
+- Whitelist system
+- User-based network control
+- Cleanup utilities
+
+#### Config Module (quota-config.sh)
+- Centralized configuration
+- Parameter validation
+- Config file management
+- Default settings
+
+#### Logging Module (quota-logging.sh)
+- Multi-level logging (DEBUG, INFO, WARN, ERROR)
+- Log rotation and cleanup
+- Standardized message formatting
+- Performance monitoring
+
+### Usage Examples
+
+1. **Check Current Quota Status**
+   ```bash
+   internet-quota status
+   ```
+
+2. **Increment Usage Time**
+   ```bash
+   internet-quota increment 30  # Add 30 minutes
+   ```
+
+3. **Reset Daily Quota**
+   ```bash
+   internet-quota reset
+   ```
+
+4. **Configure Settings**
+   ```bash
+   internet-quota config quota=120  # Set daily quota to 120 minutes
+   ```
+
+### Integration
+
+The quota system integrates with:
+- System logging for monitoring
+- iptables for network control
+- systemd for automation
+- User notification system
+
+### Security Features
+
+- File permission controls
+- Process isolation
+- Secure configuration storage
+- Activity logging
+- Network rule protection
+
+### Future Enhancements
+
+- Data encryption
+- Advanced bypass detection
+- Per-application quotas
+- Web interface
+- Detailed statistics
+
+For more details, see the [TODO.md](docs/TODO.md) file.

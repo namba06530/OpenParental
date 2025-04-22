@@ -1,95 +1,108 @@
 # Analyse du Système de Quota Internet
 
-## 1. Résumé du Fonctionnement Actuel
+## 1. État Actuel du Système
 
-### Architecture Générale
-Le système est composé de deux scripts principaux :
-- `06-set-internet-quota.sh` : Script d'installation et de configuration
-- `deploy/internet-quota.sh` : Script de gestion du quota en temps réel
+### Architecture Modulaire
+Le système a été refactorisé en modules indépendants :
+- `quota-logging.sh` : Système de journalisation avancé
+- `quota-security.sh` : Protection des données et vérification
+- `quota-core.sh` : Fonctions de base de gestion des quotas
+- `quota-config.sh` : Gestion de la configuration
+- `quota-network.sh` : Gestion des règles de pare-feu et du réseau
 
 ### Mécanisme de Fonctionnement
-1. **Installation et Configuration**
-   - Installation des dépendances (iptables, sqlite3, iproute2, libnotify-bin)
-   - Création d'un fichier `.env.quota` minimal
-   - Déploiement du script de gestion sur `/usr/local/bin/`
-   - Configuration des services systemd pour l'automatisation
+1. **Module Core (quota-core.sh)**
+   - Gestion du quota et du temps d'utilisation
+   - Fonctions de base (increment, reset, status)
+   - Interface avec les autres modules
+   - Gestion des verrous pour la concurrence
 
-2. **Gestion du Quota**
-   - Suivi du temps de connexion par minute
-   - Stockage des données dans des fichiers journaliers
-   - Système de notification à 10 et 5 minutes restantes
-   - Blocage automatique une fois le quota atteint
-   - Réinitialisation quotidienne automatique
+2. **Module Security (quota-security.sh)**
+   - Gestion sécurisée des fichiers et répertoires
+   - Vérification des permissions
+   - Protection contre les accès non autorisés
+   - Validation des opérations sensibles
 
-3. **Sécurité et Contrôle**
-   - Utilisation d'iptables pour le filtrage
-   - Système de liste blanche pour certains domaines
-   - Identification par UID utilisateur
-   - Logging des événements de quota
+3. **Module Network (quota-network.sh)**
+   - Configuration des règles iptables
+   - Gestion de la liste blanche
+   - Contrôle d'accès réseau par utilisateur
+   - Nettoyage des règles
 
-## 2. Observations et Points Faibles
+4. **Module Config (quota-config.sh)**
+   - Gestion de la configuration centralisée
+   - Validation des paramètres
+   - Chargement/Sauvegarde de la configuration
+   - Valeurs par défaut sécurisées
+
+5. **Module Logging (quota-logging.sh)**
+   - Journalisation multi-niveaux
+   - Rotation automatique des logs
+   - Formatage standardisé des messages
+   - Gestion des fichiers de log
+
+## 2. Points Forts et Faiblesses
 
 ### Points Forts
-- Architecture modulaire et bien structurée
-- Système de notification intégré
-- Gestion automatique via systemd
-- Persistance des données entre les redémarrages
-- Système de liste blanche flexible
+- ✅ Architecture modulaire bien structurée
+- ✅ Séparation claire des responsabilités
+- ✅ Système de logging robuste
+- ✅ Gestion sécurisée des fichiers
+- ✅ Configuration centralisée
+- ✅ Tests unitaires de base implémentés
 
-### Limites et Faiblesses
-1. **Fiabilité**
-   - Dépendance forte à iptables qui peut être contourné
-   - Pas de vérification de l'intégrité des fichiers de log
-   - Risque de perte de données en cas de corruption des fichiers
+### Points à Améliorer
+1. **Sécurité**
+   - ❌ Pas de chiffrement des données de quota
+   - ❌ Détection limitée des tentatives de contournement
+   - ❌ Pas de vérification d'intégrité via checksums
 
-2. **Sécurité**
-   - Possibilité de contourner le système en modifiant l'UID
-   - Pas de chiffrement des données de quota
-   - Risque de manipulation des fichiers de log
-   - Pas de protection contre la modification des règles iptables
+2. **Fiabilité**
+   - ❌ Pas de système de backup automatique
+   - ❌ Logs non centralisés dans une base de données
+   - ❌ Mécanisme de récupération limité
 
-3. **Maintenance**
-   - Logs non centralisés
-   - Pas de système de backup des données
-   - Configuration dispersée entre plusieurs fichiers
-   - Pas de mécanisme de récupération en cas d'erreur
+3. **Fonctionnalités**
+   - ❌ Pas de distinction entre navigation active/passive
+   - ❌ Pas de quotas par application
+   - ❌ Interface utilisateur limitée
 
-4. **Fonctionnalités Manquantes**
-   - Pas de statistiques détaillées
-   - Pas de gestion des exceptions temporaires
-   - Pas d'interface utilisateur
-   - Pas de système de quota par application
+## 3. Prochaines Étapes
 
-## 3. Propositions d'Amélioration
+### 1. Priorité Haute
+- Implémentation du chiffrement des données
+- Système de détection des contournements
+- Vérification d'intégrité via checksums
+- Tests d'intégration entre les modules
 
-### 1. Renforcement de la Sécurité
-- Implémenter un système de chiffrement des données
-- Ajouter une vérification d'intégrité des fichiers
-- Mettre en place un système de détection de contournement
-- Utiliser des mécanismes de contrôle plus robustes que iptables
+### 2. Priorité Moyenne
+- Documentation détaillée de l'API des modules
+- Système de backup automatique
+- Journalisation des événements de sécurité
+- Tests de résistance aux manipulations
 
-### 2. Amélioration de la Fiabilité
-- Centraliser les logs dans une base de données
-- Implémenter un système de backup automatique
-- Ajouter des mécanismes de récupération automatique
-- Mettre en place des vérifications de santé périodiques
+### 3. Priorité Basse
+- Interface web d'administration
+- Statistiques avancées
+- API REST pour intégration externe
+- Tableau de bord avec graphiques
 
-### 3. Nouvelles Fonctionnalités
-- Interface web de gestion
-- Quotas par application
-- Système de statistiques détaillées
-- Gestion des exceptions et permissions temporaires
-- API pour l'intégration avec d'autres systèmes
+## 4. Architecture Cible
 
-### 4. Refonte Architecturale
-- Séparer la logique métier de la gestion système
-- Implémenter une architecture client-serveur
-- Utiliser une base de données pour le stockage
-- Ajouter des tests automatisés
-- Mettre en place un système de monitoring
+```
+src/
+├── modules/
+│   ├── quota-core.sh      # Gestion des quotas
+│   ├── quota-security.sh  # Sécurité et intégrité
+│   ├── quota-network.sh   # Contrôle réseau
+│   ├── quota-config.sh    # Configuration
+│   └── quota-logging.sh   # Journalisation
+├── tests/
+│   ├── unit/             # Tests unitaires
+│   └── integration/      # Tests d'intégration
+└── web/                  # Future interface web
+```
 
 ## Conclusion
 
-Le système actuel est fonctionnel mais présente plusieurs points de fragilité. Une refonte complète permettrait d'améliorer significativement la sécurité, la fiabilité et les fonctionnalités tout en facilitant la maintenance future.
-
-La priorité devrait être donnée au renforcement de la sécurité et à l'amélioration de la fiabilité avant d'ajouter de nouvelles fonctionnalités. 
+La refactorisation en modules a considérablement amélioré la maintenabilité et la robustesse du système. Les prochaines étapes se concentrent sur le renforcement de la sécurité et l'ajout de fonctionnalités avancées, tout en maintenant la stabilité acquise. 
